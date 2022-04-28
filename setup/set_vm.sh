@@ -1,7 +1,17 @@
 #!/bin/bash
 
 # begin as root
-su -
+echo -e  "\033[31mthis script should run as root! \033[0m"
+
+user=`whoami`
+
+if [ $user = "root" ]
+then
+	echo "ok, you are root"
+else
+	echo "you are not root :)"
+	exit 1
+fi
 
 apt-get install -y update
 apt-get install -y aptitude
@@ -18,3 +28,5 @@ aptitude install -y ssh
 aptitude install -y ufw
 aptitude install -y apparmor
 aptitude install -y net-tools
+
+exit 0
