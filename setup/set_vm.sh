@@ -15,6 +15,7 @@ fi
 
 apt-get install -y update
 apt-get install -y aptitude
+aptitude install -y vim
 aptitude install -y sudo
 aptitude install -y apt-transport-https
 aptitude install -y ca-certificates
@@ -28,5 +29,6 @@ aptitude install -y ssh
 aptitude install -y ufw
 aptitude install -y apparmor
 aptitude install -y net-tools
+aptitude install -y htop
 
 exit 0
