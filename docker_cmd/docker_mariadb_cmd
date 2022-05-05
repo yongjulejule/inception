@@ -1,0 +1,1 @@
+docker run --rm -dit --name maria --net=wd-db -e MYSQL_ROOT_PASSWORD=rmfnxm -e MYSQL_DATABASE=dbname -e MYSQL_USER=yongjule -e MYSQL_PASSWORD=dydwnffp mariadb --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
