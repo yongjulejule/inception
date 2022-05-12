@@ -1,6 +1,6 @@
-ARG TAG=latest
-FROM --platform=linux/arm64 nginx:${TAG} AS nginginx
+FROM alpine:3.13
 COPY index.html /usr/share/nginx/html/index.html
-RUN touch abc
-ARG TAG=bb
-RUN touch ${TAG}a
+EXPOSE 80/udp
+ENV LINK=ZELDA
+RUN echo "$LINK" > hi
+ADD --chown=non:exist test /
