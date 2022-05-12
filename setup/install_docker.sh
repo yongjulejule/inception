@@ -23,6 +23,6 @@ sudo apt-get install -y docker.io
 sudo chmod 666 /var/run/docker.sock
  
 # install docker-compose
-sudo aptitude install -y python3 python3-pip
-sudo aptitude install libffi-dev
-sudo pip3 install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+
