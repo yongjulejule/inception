@@ -4,14 +4,14 @@
 
 void sig_handler(int sig) {
 fprintf(stderr, "sig receive %d\n", sig);
-pause();
-
 }
 
 int main(){
 
 signal(SIGTERM, sig_handler);
+signal(SIGINT, sig_handler);
+signal(SIGQUIT, sig_handler);
 
-pause();
+while (1) usleep(10000);
 
 }

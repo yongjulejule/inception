@@ -1,7 +1,12 @@
-FROM alpine:3.13
+FROM ubuntu
 COPY index.html /usr/share/nginx/html/index.html
-COPY a.out /
+COPY a.out /a.out
 EXPOSE 80/udp
 ENV LINK=ZELDA
 RUN echo "$LINK" > hi
-ADD --chown=non:exist test /
+#ENTRYPOINT /a.out
+RUN mkdir /myvol
+RUN echo "hello world" > /myvol/hihi
+VOLUME /myvol
+STOPSIGNAL SIGSTOP
+
