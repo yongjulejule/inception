@@ -1,8 +1,9 @@
-FROM alpine:3.13
+FROM alpine:3.14
 
 RUN apk update &&\
-    apk add mariadb mariadb-client
+	apk add --no-cache mariadb mariadb-client
 
-RUN apk add openrc && mkdir -p /run/openrc && touch /run/openrc/softlevel
+EXPOSE 3306
 
-RUN /etc/init.d/mariadb setup
+VOLUME ["/var/lib/mysql"]
+
