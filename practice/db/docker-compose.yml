@@ -3,15 +3,16 @@ version: "3"
 services:
   test-db:
 
-    image: test-mariadb:latest
+    image: ent:latest
 
     volumes:
       - mariadb-volume:/var/
-    # restart: always
+    networks:
+      - db-db-network
 
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      # MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_CHARSET: utf8mb4
@@ -19,14 +20,33 @@ services:
 
     ports:
       - "42424:3306"
-    # entrypoint:
-    #   - "/bin/sh"
+  # test-db2:
 
-    # tty: true
-    # stdin_open: true
+  #   image: test-mariadb:latest
+
+  #   volumes:
+  #     - mariadb-volume2:/var/
+  #   networks:
+  #     - db-db-network
+
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #     MYSQL_USER: ${MYSQL_USER}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #     MYSQL_CHARSET: utf8mb4
+  #     MYSQL_COLLOTION: utf8mb4_general_ci
+
+  #   ports:
+  #     - "42425:3306"
 
 volumes:
   mariadb-volume:
+    # mariadb-volume2:
+
+
+networks:
+  db-db-network:
 
     #   wordpress-db:
     #     image: mariadb:latest

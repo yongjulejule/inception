@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -eux
+set -ex
 
 if [ -d "/run/mysqld" ]; then
 	chown -R mysql:mysql /run/mysqld
@@ -15,27 +15,28 @@ else
 
 	echo "Creating initial Mysql databases"
 
+	MYSQL_DATABASE=${MYSQL_DATABASE:-"42-default-db"}
+	MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-"root"}
+	MYSQL_USER=${MYSQL_USER:-"42-user"}
+	MYSQL_PASSWORD=${MYSQL_PASSWORD:-"4242"}
+
 	chown -R mysql:mysql /var/lib/mysql
 	mysql_install_db --user=mysql --ldata=/var/lib/mysql > /dev/null
 	
 	if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
-		echo "MYSQL_ROOT_PASSWORD environment variable not exist"
-		return 1
+		echo "MYSQL_ROOT_PASSWORD environment variable not exist" >&2
 	fi
-	
-	MYSQL_DATABASE=${MYSQL_DATABASE:-""}
-	MYSQL_USER=${MYSQL_USER:-""}
-	MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
-	
+
+
 	tmpfile=`mktemp`
-	
+
 	cat << EOF > $tmpfile
 USE mysql;
 FLUSH PRIVILEGES;
 GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
 GRANT ALL ON *.* TO 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
-SET PASSWORD FOR 'root'@'localhost'=PASSWORD('${MYSQL_ROOT_PASSWORD}');
-DROP DATABASE IF EXIST test;
+SET PASSWORD FOR 'root'@'localhost'=PASSWORD('${MYSQL_ROOT_PASSWORD}') ;
+DROP DATABASE IF EXISTS test;
 FLUSH PRIVILEGES;
 EOF
 
@@ -46,13 +47,17 @@ EOF
 
 		echo "Creating database: $MYSQL_DATABASE"
 		echo "with character set [$MYSQL_CHARSET] and collation [$MYSQL_COLLATION]"
-		echo "CREATE DATABASES IF NOT EXISTS \`$MYSQL_DATABASE\` CHARACTGER SET ${MYSQL_CHARSET} COLLATE $MYSQL_COLLATION;" >> $tmpfile
+		echo "CREATE DATABASES IF NOT EXISTS '$MYSQL_DATABASE' CHARACTER SET ${MYSQL_CHARSET} COLLATE $MYSQL_COLLATION;" >> $tmpfile
 
 		if [ "$MYSQL_USER" != "" ]; then
 			echo "Creating user: $MYSQL_USER with password $MYSQL_PASSWORD"
-			echo "GRANT ALL ON \`$MYSQL_DATABASE\`.* to '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
+			echo "GRANT ALL ON '$MYSQL_DATABASE'.* to '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
 		fi
 	fi
+
+	echo
+	cat $tmpfile
+	echo
 
 	/usr/bin/mysqld --user=mysql --bootstrap --verbose=0 --skip-name-resolve --skip-networking=0 < $tmpfile
 	rm -f $tmpfile
