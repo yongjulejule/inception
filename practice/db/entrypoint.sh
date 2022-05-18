@@ -2,16 +2,9 @@
 
 set -ex
 
-if [ -d "/run/mysqld" ]; then
-	chown -R mysql:mysql /run/mysqld
-else
-	mkdir -p /run/mysqld
-	chown -R mysql:mysql /run/mysqld
-fi
-
-if [ -d /var/lib/mysql/mysql ]; then
-	chown -R mysql:mysql /var/lib/mysql
-else
+# if [ -d "/var/lib/mysql/mysql" ]; then
+# 	chown -R mysql:mysql /var/lib/mysql
+# else
 
 	echo "Creating initial Mysql databases"
 
@@ -26,7 +19,6 @@ else
 	if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
 		echo "MYSQL_ROOT_PASSWORD environment variable not exist" >&2
 	fi
-
 
 	tmpfile=`mktemp`
 
@@ -64,6 +56,6 @@ EOF
 
 	echo "Mariadb init process done."
 
-fi
+# fi
 
 exec /usr/bin/mysqld --user=mysql --console --skip-name-resolve --skip-networking=0 $@
