@@ -11,9 +11,12 @@ RUN set -ex; \
 	apk update; \
 	apk add --no-cache mariadb mariadb-client; \
 	mkdir -p /run/mysqld; \
-	chown -R mysql:mysql /run/mysqld;
+	mysql_install_db --datadir=/var/lib/mysql --auth-root-authentication-method=normal; \
+	chown -R mysql:mysql /run/mysqld /var/lib/mysql;
 
 COPY entrypoint.sh /tmp/entrypoint.sh
+
+COPY conf/mariadb-server.cnf /etc/my.cnf.d/mariadb-server.cnf
 
 RUN chmod +x /tmp/entrypoint.sh
 
@@ -22,6 +25,6 @@ EXPOSE 3306
 # init by tini for PID 1
 ENTRYPOINT ["/sbin/tini", "--"]
 
-CMD ["/tmp/entrypoint.sh"]
+CMD ["sh", "-c" , "/tmp/entrypoint.sh"]
 
 # VOLUME ["/var/lib/mysql"]
