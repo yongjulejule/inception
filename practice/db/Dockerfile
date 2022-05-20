@@ -6,13 +6,14 @@ RUN set -eux; \
 	apk add --no-cache tini
 
 # install mariadb
-# 디렉토리를 생성해주지 않으면 작동하지 않음.
 RUN set -ex; \
 	apk update; \
+	# install mariadb
 	apk add --no-cache mariadb mariadb-client; \
-	mkdir -p /run/mysqld; \
-	mysql_install_db --datadir=/var/lib/mysql --auth-root-authentication-method=normal; \
-	chown -R mysql:mysql /run/mysqld /var/lib/mysql;
+	# make directory if not exist
+	mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld; \
+	# set install db in specified directory
+	mysql_install_db --user=mysql --datadir=/var/lib/mysql && chown -R mysql:mysql /var/lib/mysql;
 
 COPY entrypoint.sh /tmp/entrypoint.sh
 
@@ -25,6 +26,6 @@ EXPOSE 3306
 # init by tini for PID 1
 ENTRYPOINT ["/sbin/tini", "--"]
 
-CMD ["sh", "-c" , "/tmp/entrypoint.sh"]
+CMD ["/tmp/entrypoint.sh"]
 
 # VOLUME ["/var/lib/mysql"]

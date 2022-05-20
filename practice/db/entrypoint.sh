@@ -1,23 +1,21 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
-set -ex
+set -x
 
+cat /etc/my.cnf.d/mariadb-server.cnf
 echo "Creating initial Mysql databases"
 
-MYSQL_DATABASE=${MYSQL_DATABASE:-"42-default-db"}
-MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-"root"}
-MYSQL_USER=${MYSQL_USER:-"42-user"}
+MYSQL_DATABASE=${MYSQL_DATABASE:-"42defaultdb"}
+MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-"rmfnxm"}
+MYSQL_USER=${MYSQL_USER:-"42user"}
 MYSQL_PASSWORD=${MYSQL_PASSWORD:-"4242"}
 
-# chown -R mysql:mysql /var/lib/mysql
-# mysql_install_db --user=mysql --ldata=/var/lib/mysql > /dev/null
-
-if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
-	echo "MYSQL_ROOT_PASSWORD environment variable not exist" >&2
-fi
-
+# mysql_install_db --datadir=/var/lib/mysql --auth-root-authentication-method=normal
+# Make temporary file to save query
 tmpfile=`mktemp`
+echo `id`
 
+# Create Query
 cat << EOF > $tmpfile
 USE mysql;
 FLUSH PRIVILEGES;
@@ -28,29 +26,47 @@ DROP DATABASE IF EXISTS test;
 FLUSH PRIVILEGES;
 EOF
 
-if [ "$MYSQL_DATABASE" != "" ]; then
-
+# Create Database
 	MYSQL_CHARSET=${MYSQL_CHARSET:-utf8}
 	MYSQL_COLLATION=${MYSQL_COLLATION:-utf8_general_ci}
 
-	echo "Creating database: $MYSQL_DATABASE"
-	echo "with character set [$MYSQL_CHARSET] and collation [$MYSQL_COLLATION]"
-	echo "CREATE DATABASES IF NOT EXISTS '$MYSQL_DATABASE' CHARACTER SET ${MYSQL_CHARSET} COLLATE $MYSQL_COLLATION;" >> $tmpfile
+# FIXME : Setting character set and collation for mysql database. THis should be done in the other way around.
+echo "Creating database: $MYSQL_DATABASE"
+echo "with character set [$MYSQL_CHARSET] and collation [$MYSQL_COLLATION]"
+echo "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE CHARACTER SET ${MYSQL_CHARSET} COLLATE $MYSQL_COLLATION;" >> $tmpfile
 
-	if [ "$MYSQL_USER" != "" ]; then
-		echo "Creating user: $MYSQL_USER with password $MYSQL_PASSWORD"
-		echo "GRANT ALL ON '$MYSQL_DATABASE'.* to '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
-	fi
-fi
+echo "Creating user: $MYSQL_USER with password $MYSQL_PASSWORD"
+echo "GRANT ALL ON $MYSQL_DATABASE.* to '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
 
+# FIXME: Delete... For debugging
 cat $tmpfile
 
-/usr/bin/mysqld_safe --datadir=/var/lib/data&
+/usr/bin/mysqld_safe --datadir='/var/lib/mysql' &
 
+sleep 3
+mysqladmin ping
+# FIXME: DONT WOKR HERE!!!!!!!! NO PERMOSSION
 mariadb < $tmpfile
+echo $?
+sleep 1
 
-rm -f $tmpfile
+for i in `seq 1 30`; do
+	sleep 1
+	echo $i
+	echo "for loop until mysql set up"
+	mysqladmin -uroot -p$MYSQL_ROOT_PASSWORD ping
+	RET=$?
+	if [ $RET -eq 0 ]; then
+		break
+	fi
+	echo 'MySQL init process in progress...'
+done
+
+echo "shutdown..."
+mysqladmin shutdown
 
 echo "Mariadb init process done."
 
-exec /usr/bin/mysqld_safe --datadir=/var/lib/mysql "$@"
+echo "exec /usr/bin/mysqld_safe --datadir=/var/lib/mysql"
+rm -f $tmpfile
+exec "$@"
