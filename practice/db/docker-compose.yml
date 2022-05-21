@@ -1,29 +1,30 @@
 version: "3"
 
 services:
-  test-db:
+  mariadb:
+    image: inception-mariadb:v1
 
-    image: ent:latest
+    build:
+      context: .
 
     container_name: plz
 
     volumes:
-      - mariadb-volume:/var/
+      - mariadb-volume:/var/lib/mysql:rw
     networks:
-      - db-db-network
-
+      - inception-intra
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_CHARSET: utf8mb4
-      MYSQL_COLLOTION: utf8mb4_general_ci
-
+      MYSQL_COLLATION: utf8mb4_general_ci
     expose:
       - "3306"
+    restart: "always"
 
 volumes:
   mariadb-volume:
 networks:
-  db-db-network:
+  inception-intra:

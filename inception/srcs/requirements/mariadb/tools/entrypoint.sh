@@ -2,7 +2,7 @@
 
 if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
 
-	echo "Creating initial Maraidb databases"
+	echo "Creating initial MaraiDB databases"
 
 	MYSQL_DATABASE=${MYSQL_DATABASE:-"42defaultdb"}
 	MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-"rmfnxm"}
@@ -36,14 +36,14 @@ EOF
 
 	/usr/bin/mysqld_safe &
 
-	echo "for loop until mysql set up"
+	echo "for loop until MariaDB server set up"
 	for i in `seq 1 30`; do
 		mysqladmin ping >& /dev/null
 		if [ $? -eq 0 ]; then
-			echo "Mariadb server started!"
+			echo "MariaDB server started!"
 			break
 		fi
-		echo "Mariadb server does not started yet $i/30..."
+		echo "MariaDB server does not started yet $i/30..."
 		sleep 1
 	done
 
@@ -53,10 +53,10 @@ EOF
 	echo "shutdown..."
 	mysqladmin -uroot -p$MYSQL_ROOT_PASSWORD shutdown
 
-	echo "Mariadb init process done."
+	echo "MariaDB init process done."
 else
 	echo "Database already installed."
 fi
 
-echo "exec /usr/bin/mysqld_safe"
+echo "execute MariaDB server"
 exec "$@"

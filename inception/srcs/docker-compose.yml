@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  mariadb:
+    image: inception-mariadb:v1
+
+    build:
+      context: ./requirements/mariadb/
+
+    container_name: mariadb
+
+    volumes:
+      - mariadb-volume:/var/lib/mysql
+    networks:
+      - inception-intra
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_general_ci
+    expose:
+      - "3306"
+    restart: "always"
+
+volumes:
+  mariadb-volume:
+    name: mariadb-volume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/yongjule/data
+networks:
+  inception-intra:
