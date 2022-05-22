@@ -31,6 +31,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/yongjule/data
+      device: ${HOME:-/home/yongjule}/data/db
 networks:
   inception-intra:
+    name: inception-intra

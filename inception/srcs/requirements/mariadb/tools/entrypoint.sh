@@ -1,6 +1,12 @@
 #!/usr/bin/env sh
 
+MYSQL_DATABASE=${MYSQL_DATABASE:-"testing"}
+
 if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
+
+	chown -R mysql:mysql /var/lib/mysql
+
+	mysql_install_db
 
 	echo "Creating initial MaraiDB databases"
 
@@ -44,6 +50,10 @@ EOF
 			break
 		fi
 		echo "MariaDB server does not started yet $i/30..."
+		if [ $i -eq 30 ]; then
+			echo "MariaDB server start failed!"
+			exit 1
+		fi
 		sleep 1
 	done
 

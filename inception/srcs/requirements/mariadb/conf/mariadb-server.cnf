@@ -11,7 +11,11 @@
 bind-address=0.0.0.0
 port=3306
 datadir='/var/lib/mysql'
+basedir='/usr'
 default-time-zone='+9:00'
+user=mysql
+#log-error=error.log
+
 
 # Galera-related settings
 [galera]
