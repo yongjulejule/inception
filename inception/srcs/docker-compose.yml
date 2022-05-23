@@ -2,7 +2,7 @@ version: "3"
 
 services:
   mariadb:
-    image: inception-mariadb:v1
+    image: inception_mariadb:v1
 
     build:
       context: ./requirements/mariadb/
@@ -10,9 +10,10 @@ services:
     container_name: mariadb
 
     volumes:
-      - mariadb-volume:/var/lib/mysql
+      - mariadb_volume:/var/lib/mysql
     networks:
-      - inception-intra
+      inception_intra:
+        ipv4_address: 172.10.0.42
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -20,18 +21,66 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_CHARSET: utf8mb4
       MYSQL_COLLATION: utf8mb4_general_ci
-    expose:
-      - "3306"
+    restart: "always"
+  wordpress:
+    image: inception_wordpress:v1
+    depends_on:
+      - mariadb
+
+    build:
+      context: ./requirements/wordpress/
+
+    container_name: wordpress
+
+    volumes:
+      - wordpress_volume:/var/www/html
+    networks:
+      inception_intra:
+        ipv4_address: 172.10.0.41
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     restart: "always"
 
+  nginx:
+    image: inception_nginx:v1
+    depends_on:
+      - wordpress
+
+    build:
+      context: ./requirements/nginx/
+
+    container_name: nginx
+
+    volumes:
+      - wordpress_volume:/var/www/html
+    networks:
+      inception_intra:
+        ipv4_address: 172.10.0.40
+    restart: "always"
+    ports:
+      - "4242:80"
+
 volumes:
-  mariadb-volume:
-    name: mariadb-volume
+  mariadb_volume:
+    name: mariadb_volume
     driver: local
     driver_opts:
       type: none
       o: bind
       device: ${HOME:-/home/yongjule}/data/db
+  wordpress_volume:
+    name: wordpress_volume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${HOME:-/home/yongjule}/data/wordpress
+
 networks:
-  inception-intra:
-    name: inception-intra
+  inception_intra:
+    ipam:
+      config:
+        - subnet: 172.10.0.0/24
+    name: inception_intra

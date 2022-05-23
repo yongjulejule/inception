@@ -8,7 +8,6 @@ RUN set -ex \
 	apk update && \
 	apk add  --no-cache openssl curl ca-certificates && \
 	# install nginx
-	# RUN set -ex  pipefail \
 	printf "%s%s%s%s\n" \
 	"@nginx " \
 	"http://nginx.org/packages/alpine/v" \
@@ -29,7 +28,7 @@ EXPOSE 443
 
 COPY tools/entrypoint.sh /tmp/entrypoint.sh
 
-COPY conf/default.conf /etc/nginx/nginx/conf.d/default.conf
+COPY conf/default.conf /etc/nginx/conf.d/default.conf
 
 STOPSIGNAL SIGQUIT
 

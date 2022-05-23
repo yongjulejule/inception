@@ -14,7 +14,8 @@ datadir='/var/lib/mysql'
 basedir='/usr'
 default-time-zone='+9:00'
 user=mysql
-#log-error=error.log
+log-error=mariadb_error.log
+pid-file=mariadb_pid.pid
 
 
 # Galera-related settings

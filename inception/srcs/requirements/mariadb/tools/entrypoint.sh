@@ -57,6 +57,10 @@ EOF
 	done
 
 	mariadb < $tmpfile
+	if [ $? -ne 0 ]; then
+		echo "The root already exist. Login as root..."
+		mariadb -uroot -p${MYSQL_ROOT_PASSWORD} <$tmpfile
+	fi
 	rm -f $tmpfile
 
 	echo "shutdown..."

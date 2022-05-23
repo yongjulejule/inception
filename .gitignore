@@ -1,2 +1,2 @@
 .env
-nginx_from_container
+*_from_container
