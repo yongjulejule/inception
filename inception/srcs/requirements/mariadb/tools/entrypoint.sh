@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 
-MYSQL_DATABASE=${MYSQL_DATABASE:-"testing"}
 
 if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
 
