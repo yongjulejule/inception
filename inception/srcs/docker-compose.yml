@@ -60,7 +60,7 @@ services:
         ipv4_address: 172.10.0.40
     restart: "always"
     ports:
-      - "4242:80"
+      - "443:443"
 
 volumes:
   mariadb_volume:

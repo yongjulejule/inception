@@ -20,6 +20,7 @@ RUN set -ex \
 	apk update && apk add nginx@nginx && \
 	ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
+
 # Can install nginx dynamic modules like follows
 # see http://nginx.org/en/linux_packages.html#dynmodules
 # apk add nginx-module-image-filter@nginx nginx-module-njs@nginx;
@@ -27,7 +28,8 @@ RUN set -ex \
 EXPOSE 443
 
 COPY tools/entrypoint.sh /tmp/entrypoint.sh
-
+COPY conf/key.pem /etc/nginx/key.pem
+COPY conf/cert.pem /etc/nginx/cert.pem
 COPY conf/default.conf /etc/nginx/conf.d/default.conf
 
 STOPSIGNAL SIGQUIT

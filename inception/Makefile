@@ -65,7 +65,8 @@ start			:
 
 .PHONY		: re
 re				:
-					make rebuild
+					make clean
+					make build
 					make start
 
 .PHONY 		: restart
@@ -88,8 +89,8 @@ top				:
 ps				:
 					$(COMPOSE) -f $(COMPOSE_FILE) ps
 
-.PHONY		: log
-log				:
+.PHONY		: logs
+logs				:
 					$(COMPOSE) -f $(COMPOSE_FILE) logs
 
 .PHONY		: exec
@@ -107,6 +108,7 @@ endif
 clean			: 
 					make down c="-v"
 					docker image rm $(IMGS)
+					yes | docker system prune -a
 
 ######################### Color #########################
 GREEN="\033[32m"

@@ -1,2 +1,3 @@
 .env
 *_from_container
+*.pem
