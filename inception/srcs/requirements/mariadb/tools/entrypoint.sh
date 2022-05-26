@@ -1,8 +1,11 @@
 #!/usr/bin/env sh
 
 
+set -x
+
 if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
 
+	touch /var/lib/mysql/mariadb_error.log
 	chown -R mysql:mysql /var/lib/mysql
 
 	mysql_install_db
@@ -38,6 +41,7 @@ EOF
 
 	echo "Creating user: $MYSQL_USER with password $MYSQL_PASSWORD"
 	echo "GRANT ALL ON $MYSQL_DATABASE.* to '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
+	echo "GRANT ALL ON $MYSQL_DATABASE.* to '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
 
 	/usr/bin/mysqld_safe &
 

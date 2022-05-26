@@ -6,7 +6,7 @@ DB_CONT := mariadb
 NGINX_CONT := nginx
 WD_CONT := wordpress
 
-IMGS := $(shell  docker images | grep inception | sed  -e "s/\ \+/ /g" | cut -d' ' -f3)
+IMGS := $(shell  docker images | grep inception | sed -E "s/ +/ /g" | cut -d' ' -f3)
 
 ########################## Rule ##########################
 
@@ -49,7 +49,7 @@ help			:
 					@printf $(L_GREEN)"%s \n"$(RESET)  "with [c='cmd'], execute the cmd for each containers"
 
 					@printf $(L_PUPLE)"%-17s  "$(RESET) "clean"
-					@printf $(L_GREEN)"%s \n"$(RESET)  "remove images named inception_*"
+					@printf $(L_GREEN)"%s \n"$(RESET)  "remove images named inception_* and whole docker cache"
 
 .PHONY		: build
 build			:

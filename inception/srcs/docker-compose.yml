@@ -22,6 +22,7 @@ services:
       MYSQL_CHARSET: utf8mb4
       MYSQL_COLLATION: utf8mb4_general_ci
     restart: "always"
+
   wordpress:
     image: inception_wordpress:v1
     depends_on:
@@ -58,6 +59,8 @@ services:
     networks:
       inception_intra:
         ipv4_address: 172.10.0.40
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
     restart: "always"
     ports:
       - "443:443"

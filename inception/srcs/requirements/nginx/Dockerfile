@@ -6,7 +6,7 @@ RUN set -ex \
 # install prerequsitions
 RUN set -ex \
 	apk update && \
-	apk add  --no-cache openssl curl ca-certificates && \
+	apk add  --no-cache openssl curl ca-certificates gettext && \
 	# install nginx
 	printf "%s%s%s%s\n" \
 	"@nginx " \
@@ -28,9 +28,7 @@ RUN set -ex \
 EXPOSE 443
 
 COPY tools/entrypoint.sh /tmp/entrypoint.sh
-COPY conf/key.pem /etc/nginx/key.pem
-COPY conf/cert.pem /etc/nginx/cert.pem
-COPY conf/default.conf /etc/nginx/conf.d/default.conf
+COPY conf/conf.template /tmp/conf.template
 
 STOPSIGNAL SIGQUIT
 
