@@ -1,8 +1,6 @@
 #!/usr/bin/env sh
 
 
-set -x
-
 if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
 
 	touch /var/lib/mysql/mariadb_error.log
