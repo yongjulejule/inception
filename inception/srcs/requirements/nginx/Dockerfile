@@ -3,6 +3,8 @@ FROM alpine:3.14
 RUN set -ex \
 	apk update && apk add tini
 
+RUN adduser -D -S --home /var/cache/nginx -u 82 -G www-data www-data
+
 # install prerequsitions
 RUN set -ex \
 	apk update && \

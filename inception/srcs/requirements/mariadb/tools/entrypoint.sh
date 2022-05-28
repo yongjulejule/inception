@@ -45,14 +45,14 @@ EOF
 
 	echo "for loop until MariaDB server set up"
 	for i in `seq 1 30`; do
-		mysqladmin ping >& /dev/null
+		mysqladmin ping > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
 			echo "MariaDB server started!"
 			break
 		fi
 		echo "MariaDB server does not started yet $i/30..."
 		if [ $i -eq 30 ]; then
-			echo "MariaDB server start failed!"
+			echo "MariaDB server start failed!" >&2
 			exit 1
 		fi
 		sleep 1
