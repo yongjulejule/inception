@@ -50,6 +50,7 @@ services:
       WP_USER_NAME: ${WP_USER_NAME}
       WP_USER_PASSWORD: ${WP_USER_PASSWORD}
       WP_USER_EMAIL: ${WP_USER_EMAIL}
+      WP_REDIS_PASSWORD: ${WP_REDIS_PASSWORD}
     restart: "always"
 
   nginx:
