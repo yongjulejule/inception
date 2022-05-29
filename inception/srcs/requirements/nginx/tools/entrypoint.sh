@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 
-
 if [ ! -f .setup ]; then
 	echo "Setting up nginx"
 	touch .setup
@@ -23,4 +22,5 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
+echo "Executing $@"
 exec "$@"

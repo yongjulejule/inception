@@ -12,8 +12,6 @@ RUN set -ex; \
 	apk add --no-cache mariadb mariadb-client; \
 	# make directory if not exist
 	mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld /usr/lib/mariadb && chmod 777 /usr/lib/mariadb;
-# set install db in specified directory
-# mysql_install_db --user=mysql --datadir='/var/lib/mysql' && chown -R mysql:mysql /var/lib/mysql;
 
 COPY tools/entrypoint.sh /tmp/entrypoint.sh
 

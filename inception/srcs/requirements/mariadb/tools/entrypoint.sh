@@ -1,12 +1,11 @@
 #!/usr/bin/env sh
 
-
 if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
 
 	touch /var/lib/mysql/mariadb_error.log
 	chown -R mysql:mysql /var/lib/mysql
 
-	mysql_install_db
+	mysql_install_db --auth-root-authentication-method=normal
 
 	echo "Creating initial MaraiDB databases"
 
@@ -73,5 +72,5 @@ else
 	echo "Database already installed."
 fi
 
-echo "execute MariaDB server"
+echo "Execute $@"
 exec "$@"

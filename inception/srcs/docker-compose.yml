@@ -1,6 +1,22 @@
 version: "3"
 
 services:
+  redis:
+    image: inception_redis:v1
+    
+    build:
+      context: ./requirements/bonus/redis/
+    
+    container_name: redis
+    
+    networks:
+      inception_intra:
+        ipv4_address: 172.10.0.43
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+    restart: "always"
+
   mariadb:
     image: inception_mariadb:v1
 
@@ -27,6 +43,7 @@ services:
     image: inception_wordpress:v1
     depends_on:
       - mariadb
+      - redis
 
     build:
       context: ./requirements/wordpress/
@@ -50,7 +67,8 @@ services:
       WP_USER_NAME: ${WP_USER_NAME}
       WP_USER_PASSWORD: ${WP_USER_PASSWORD}
       WP_USER_EMAIL: ${WP_USER_EMAIL}
-      WP_REDIS_PASSWORD: ${WP_REDIS_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     restart: "always"
 
   nginx:

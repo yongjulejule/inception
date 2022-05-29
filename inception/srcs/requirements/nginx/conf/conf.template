@@ -5,7 +5,7 @@ server {
 	location / {
 		return 301 https://${DOMAIN_NAME}$request_uri;
 	}
-	
+
 }
 server {
     listen       443 ssl;
@@ -17,7 +17,7 @@ server {
         root   /var/www/html/wordpress;
         index  index.php index.html index.htm;
     }
-		
+
 		ssl_certificate						${DOMAIN_NAME}.crt;
 		ssl_certificate_key				${DOMAIN_NAME}.key;
 		ssl_session_timeout				5m;
@@ -31,4 +31,3 @@ server {
        include        fastcgi_params;
     }
 }
-

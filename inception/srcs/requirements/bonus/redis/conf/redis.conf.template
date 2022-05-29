@@ -72,7 +72,7 @@
 # IF YOU ARE SURE YOU WANT YOUR INSTANCE TO LISTEN TO ALL THE INTERFACES
 # JUST COMMENT OUT THE FOLLOWING LINE.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bind 127.0.0.1 -::1
+bind ${REDIS_HOST}
 
 # Protected mode is a layer of security protection, in order to avoid that
 # Redis instances left open on the internet are accessed and exploited.
@@ -270,9 +270,6 @@ tcp-keepalive 300
 # the line below:
 #
 # supervised auto
-
-# config daemonize or not.
-daemonize yes
 
 # Specify the server verbosity level.
 # This can be one of:
@@ -884,7 +881,7 @@ acllog-max-len 128
 # The requirepass is not compatable with aclfile option and the ACL LOAD
 # command, these will cause requirepass to be ignored.
 #
-# requirepass foobared
+requirepass ${REDIS_PASSWORD}
 
 # New users are initialized with restrictive permissions by default, via the
 # equivalent of this ACL rule 'off resetkeys -@all'. Starting with Redis 6.2, it
@@ -2035,7 +2032,3 @@ jemalloc-bg-thread yes
 # to suppress
 #
 # ignore-warnings ARM64-COW-BUG
-
-##############
-# MY CONFIGS #
-##############

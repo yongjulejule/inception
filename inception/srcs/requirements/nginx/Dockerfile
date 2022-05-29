@@ -5,9 +5,9 @@ RUN set -ex \
 
 RUN adduser -D -S --home /var/cache/nginx -u 82 -G www-data www-data
 
-# install prerequsitions
 RUN set -ex \
 	apk update && \
+	# install prerequsitions
 	apk add  --no-cache openssl curl ca-certificates gettext && \
 	# install nginx
 	printf "%s%s%s%s\n" \
@@ -22,10 +22,6 @@ RUN set -ex \
 	apk update && apk add nginx@nginx && \
 	ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
-
-# Can install nginx dynamic modules like follows
-# see http://nginx.org/en/linux_packages.html#dynmodules
-# apk add nginx-module-image-filter@nginx nginx-module-njs@nginx;
 
 EXPOSE 443
 

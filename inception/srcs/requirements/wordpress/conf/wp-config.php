@@ -38,9 +38,13 @@ define( 'DB_CHARSET', 'utf8mb4' );
 /** The database collate type. Don't change this if in doubt. */
 define( 'DB_COLLATE', 'utf8mb4_general_ci' );
 
+/** Redis-cache setting */
 define( 'WP_CACHE', true );
-define( 'WP_CACHE_KEY_SALT', 'sdf/kA!Ba[sdfrAui38>ei<qwe[12~4dsg');
-define( 'WP_REDIS_PASSWORD', getenv('WP_REDIS_PASSWORD'));
+define( 'WP_CACHE_KEY_SALT', 'yongjule.42.fr' );
+
+define( 'WP_REDIS_HOST', getenv('REDIS_HOST') );
+define( 'WP_REDIS_PASSWORD', getenv('REDIS_PASSWORD') );
+define( 'WP_REDIS_PORT', '6379' );
 
 /**#@+
  * Authentication unique keys and salts.

@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 
-if [ ! -d "/var/www/html/wordpress" ]; then
+set -x
+
+# Errors here
+if [ ! -d /var/www/html/wordpress/ ]; then
 	echo "Download wordpress..."
 	mkdir -p /var/www/html/
 	wp core download --allow-root
@@ -32,21 +35,16 @@ if ! wp core is-installed --allow-root; then
 	wp user create --allow-root \
   ${WP_USER_NAME} ${WP_USER_EMAIL} --role=editor --user_pass=${WP_USER_PASSWORD}
 
-cat >>/etc/redis.conf <<REDIS_EOF
-#################
-#   MY CONFIG   #
-#################
-requirepass ${WP_REDIS_PASSWORD}
-daemonize yes
-REDIS_EOF
+	RET=`echo "PING" | redis-cli -h ${REDIS_HOST} -a ${REDIS_PASSWORD}`
 
-	redis-server /etc/redis.conf
-
-	if [ $? -ne 0 ]; then
-		echo "fail to run redis-server" >&2
+	if [ RET == "PONG" ]; then
+		echo "Redis server is active!"
+	else
+		echo "Fail to connect redis client." >&2
 		exit 1
 	fi
 
+	echo "Install redis-cache for wordpress"
 	wp plugin install --allow-root \
 	redis-cache
 	wp plugin activate --allow-root \
@@ -58,4 +56,5 @@ fi
 
 chown -R www-data:www-data /var/www/html
 
+echo "Execute $@"
 exec "$@"

@@ -61,7 +61,7 @@ rebuild		:
 
 .PHONY 		: start
 start			:
-					$(COMPOSE) -f $(COMPOSE_FILE) up -d
+					$(COMPOSE) -f $(COMPOSE_FILE) up -d --build
 
 .PHONY		: re
 re				:
