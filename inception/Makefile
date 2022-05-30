@@ -63,6 +63,10 @@ rebuild		:
 start			:
 					$(COMPOSE) -f $(COMPOSE_FILE) up -d --build
 
+.PHONY		: stop
+stop			:
+					$(COMPOSE) -f $(COMPOSE_FILE) stop
+
 .PHONY		: re
 re				:
 					make clean

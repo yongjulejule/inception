@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
 
 	touch /var/lib/mysql/mariadb_error.log
@@ -40,6 +42,7 @@ EOF
 	echo "GRANT ALL ON $MYSQL_DATABASE.* to '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
 	echo "GRANT ALL ON $MYSQL_DATABASE.* to '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
 
+	set +e
 	/usr/bin/mysqld_safe &
 
 	echo "for loop until MariaDB server set up"
@@ -64,6 +67,7 @@ EOF
 	fi
 	rm -f $tmpfile
 
+	set -e
 	echo "shutdown..."
 	mysqladmin -uroot -p$MYSQL_ROOT_PASSWORD shutdown
 

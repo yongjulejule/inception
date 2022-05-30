@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 if [ ! -f .setup ]; then
 	echo "Setting up nginx"
 	touch .setup
@@ -16,6 +18,7 @@ else
 	echo "nginx already setup"
 fi
 
+set +e
 nginx -t >/dev/null 2>&1
 if [ $? -ne 0 ]; then
 	echo "nginx does not work... please check configure!" >&2

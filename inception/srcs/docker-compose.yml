@@ -1,14 +1,35 @@
 version: "3"
 
 services:
+  ftp:
+    image: inception_ftp:v1
+
+    build:
+      context: ./requirements/bonus/ftp
+
+    container_name: ftp
+
+    volumes:
+      - wordpress_volume:/var/www/ftp
+
+    networks:
+      inception_intra:
+        ipv4_address: 172.10.0.44
+
+    restart: "always"
+
+    ports:
+      - "21:21"
+      - "42424:21"
+
   redis:
     image: inception_redis:v1
-    
+
     build:
       context: ./requirements/bonus/redis/
-    
+
     container_name: redis
-    
+
     networks:
       inception_intra:
         ipv4_address: 172.10.0.43
@@ -44,6 +65,7 @@ services:
     depends_on:
       - mariadb
       - redis
+      - ftp
 
     build:
       context: ./requirements/wordpress/

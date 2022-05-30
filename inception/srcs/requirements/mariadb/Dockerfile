@@ -26,5 +26,5 @@ STOPSIGNAL SIGQUIT
 # init by tini for PID 1
 ENTRYPOINT ["/sbin/tini", "--", "/tmp/entrypoint.sh"]
 
-CMD ["/usr/bin/mysqld_safe"]
+CMD ["/usr/bin/mysqld"]
 

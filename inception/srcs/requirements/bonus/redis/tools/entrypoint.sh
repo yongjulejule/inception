@@ -1,16 +1,19 @@
 #!/usr/bin/env sh
 
+set -e
+
 if [ ! -d /etc/redis/ ]; then
 	echo "Setting up redis"
 	mkdir -p /etc/redis
 	envsubst '${REDIS_HOST} ${REDIS_PASSWORD}' < /tmp/redis.conf.template > /etc/redis/redis.conf
-	
-	redis-server /etc/redis/redis.conf
-	
+
+	redis-server /etc/redis/redis.conf &
+
+	set +e
 	echo "Check redis server activated..."
 	for i in `seq 1 10`; do
-		RET=`echo "PING" | redis-cli -h ${REDIS_HOST} -a ${REDIS_PASSWORD}`
-		if [ RET = "PONG" ]; then
+		RET=`echo "PING" | redis-cli -h ${REDIS_HOST} -a ${REDIS_PASSWORD}` 2>/dev/null
+		if [ $RET = "PONG" ]; then
 			echo "Redis server is active!"
 			break
 		fi
@@ -21,11 +24,14 @@ if [ ! -d /etc/redis/ ]; then
 		fi
 		sleep 1
 	done
-	
-	redis-cli -h ${REDIS_HOST} -a ${REDIS_PASSWORD} shutdown
-	echo "Shutdonw redis server..."
+
+	set -e
+	echo "Shutdown redis server..."
+	redis-cli -h ${REDIS_HOST} -a ${REDIS_PASSWORD} shutdown 2>/dev/null
+	echo "redis init process done."
+	tail -f /var/log/redis/redis.log &
 else
-	echo "redis already setup"
+	echo "redis already setup."
 fi
 
 echo "Execute $@"
