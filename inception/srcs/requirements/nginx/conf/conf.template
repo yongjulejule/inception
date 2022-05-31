@@ -24,10 +24,20 @@ server {
 		ssl_protocols							TLSv1.2 TLSv1.3;
 		ssl_prefer_server_ciphers	on;
 
+    location ~ ^/adminer {
+	    location ~ \.php$ {
+	       fastcgi_pass   adminer:8000;
+	       fastcgi_index  adminer.php;
+	       fastcgi_param  SCRIPT_FILENAME  /var/www/html/wordpress/adminer$fastcgi_script_name;
+	       include        fastcgi_params;
+	    }
+    }
+
     location ~ \.php$ {
-       fastcgi_pass   172.10.0.41:9000;
+       fastcgi_pass   wordpress:9000;
        fastcgi_index  index.php;
        fastcgi_param  SCRIPT_FILENAME  /var/www/html/wordpress$fastcgi_script_name;
        include        fastcgi_params;
     }
+
 }

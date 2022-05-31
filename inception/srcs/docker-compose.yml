@@ -1,6 +1,23 @@
 version: "3"
 
 services:
+  adminer:
+    image: inception_adminer:v1
+
+    depends_on:
+      - mariadb
+
+    build:
+      context: ./requirements/bonus/adminer
+
+    container_name: "adminer"
+
+    networks:
+      inception_intra:
+        ipv4_address: 172.10.0.45
+
+    restart: "always"
+
   ftp:
     image: inception_ftp:v1
 
@@ -98,6 +115,7 @@ services:
     image: inception_nginx:v1
     depends_on:
       - wordpress
+      - adminer
 
     build:
       context: ./requirements/nginx/

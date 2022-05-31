@@ -30,6 +30,8 @@ RUN chmod +x /tmp/entrypoint.sh
 COPY conf/www.conf /etc/php7/php-fpm.d/www.conf
 COPY conf/wp-config.php /tmp/wp-config.php
 
+EXPOSE 9000
+
 ENTRYPOINT [ "/sbin/tini", "--", "/tmp/entrypoint.sh" ]
 
 CMD [ "php-fpm7", "-F"]
