@@ -10,17 +10,18 @@ services:
     container_name: ftp
 
     volumes:
-      - wordpress_volume:/var/www/ftp
+      - wordpress_volume:/var/www/wordpress
 
     networks:
       inception_intra:
         ipv4_address: 172.10.0.44
+    environment:
+      FTP_PASSWORD: ${FTP_PASSWORD}
 
     restart: "always"
 
     ports:
       - "21:21"
-      - "42424:21"
 
   redis:
     image: inception_redis:v1

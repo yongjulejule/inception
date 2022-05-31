@@ -3,8 +3,7 @@
 set -e
 
 if [ ! -f .setup ]; then
-	echo "Setting up nginx"
-	touch .setup
+	echo "Setting up Nginx"
 	envsubst '${DOMAIN_NAME}' < /tmp/conf.template > /etc/nginx/conf.d/default.conf
 	openssl req -new -newkey rsa:2048 -nodes -keyout \
 	/etc/nginx/${DOMAIN_NAME}.key -out \
@@ -14,8 +13,9 @@ if [ ! -f .setup ]; then
 	-signkey /etc/nginx/${DOMAIN_NAME}.key \
 	-out /etc/nginx/${DOMAIN_NAME}.crt
 	sed -En  s/"^user +nginx"/"user  www-data"/ /etc/nginx/nginx.conf
+	touch .setup
 else
-	echo "nginx already setup"
+	echo "Nginx is already setup"
 fi
 
 set +e
