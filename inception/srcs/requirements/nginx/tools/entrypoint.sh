@@ -12,7 +12,8 @@ if [ ! -f .setup ]; then
 	openssl x509 -req -days 365 -in /etc/nginx/${DOMAIN_NAME}.csr \
 	-signkey /etc/nginx/${DOMAIN_NAME}.key \
 	-out /etc/nginx/${DOMAIN_NAME}.crt
-	sed -En  s/"^user +nginx"/"user  www-data"/ /etc/nginx/nginx.conf
+	sed -i s/"user  nginx"/"user  www-data"/ /etc/nginx/nginx.conf
+	chown -R www-data:www-data /var/log/nginx
 	touch .setup
 else
 	echo "Nginx is already setup"

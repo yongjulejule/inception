@@ -20,7 +20,7 @@ RUN set -ex \
 	openssl rsa -pubin -in /tmp/nginx_signing.rsa.pub -text -noout && \
 	mv /tmp/nginx_signing.rsa.pub /etc/apk/keys/ && \
 	apk update && apk add nginx@nginx && \
-	ln -sf /dev/stdout /var/log/nginx/access.log && \
+	touch /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
 
 EXPOSE 443

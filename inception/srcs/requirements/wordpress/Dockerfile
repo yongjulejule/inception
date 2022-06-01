@@ -13,7 +13,7 @@ RUN set -ex && \
 	php7-pdo_mysql php7-soap php7-xmlrpc php7-posix php7-mcrypt php7-gettext \
 	php7-ldap php7-ctype php7-dom php7-simplexml php7-fpm && \
 	mkdir -p /var/log/php7 && \
-	ln -sf /dev/stdout /var/log/php7/access.log && \
+	touch /var/log/php7/access.log && \
 	ln -sf /dev/stderr /var/log/php7/error.log && \
 	chown -R www-data:www-data /var/log/php7
 

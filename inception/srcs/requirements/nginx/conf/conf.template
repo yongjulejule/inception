@@ -5,8 +5,8 @@ server {
 	location / {
 		return 301 https://${DOMAIN_NAME}$request_uri;
 	}
-
 }
+
 server {
     listen       443 ssl;
     server_name  ${DOMAIN_NAME};
@@ -24,13 +24,11 @@ server {
 		ssl_protocols							TLSv1.2 TLSv1.3;
 		ssl_prefer_server_ciphers	on;
 
-    location ~ ^/adminer {
-	    location ~ \.php$ {
-	       fastcgi_pass   adminer:8000;
-	       fastcgi_index  adminer.php;
-	       fastcgi_param  SCRIPT_FILENAME  /var/www/html/wordpress/adminer$fastcgi_script_name;
-	       include        fastcgi_params;
-	    }
+    location ~ /adminer {
+       fastcgi_pass   adminer:8000;
+       fastcgi_index  index.php;
+       fastcgi_param  SCRIPT_FILENAME  /var/www/html/index.php;
+       include        fastcgi_params;
     }
 
     location ~ \.php$ {

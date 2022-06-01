@@ -4,7 +4,9 @@ RUN set -ex && \
 	apk update && \
 	apk add tini
 
-RUN adduser -D -S --home /var/www/wordpress -u 82 -G www-data www-data && addgroup www-data ftp
+RUN mkdir -p /var/www/wordpress && \
+	adduser -D -S --home /var/www/wordpress -u 82 -G www-data www-data && \
+	addgroup www-data ftp
 
 RUN set -ex \
 	apk update && \

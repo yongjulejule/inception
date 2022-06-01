@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 
-set -x
+set -e
 
-mkdir -p /var/www
-mkdir -p /var/www/html
-mkdir -p /var/www/html/wordpress
-mkdir -p /var/www/html/wordpress/adminer/
-cp /tmp/adminer.php /var/www/html/wordpress/adminer/adminer.php
-chown -R www-data:www-data /var/www/html
+if [ ! -f /var/www/html/index.php ]; then
+	mkdir -p /var/www
+	mkdir -p /var/www/html
+	cp /tmp/adminer.php /var/www/html/index.php
+	chown -R www-data:www-data /var/www/html
+fi
 
 exec "$@"
