@@ -24,6 +24,10 @@ server {
 		ssl_protocols							TLSv1.2 TLSv1.3;
 		ssl_prefer_server_ciphers	on;
 
+		location ~ ^/static {
+			proxy_pass	http://hello.jule.com:8080$request_uri;
+		}
+
     location ~ /adminer {
        fastcgi_pass   adminer:8000;
        fastcgi_index  index.php;

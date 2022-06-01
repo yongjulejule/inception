@@ -8,7 +8,7 @@ RUN adduser -D -S --home /var/cache/nginx -u 82 -G www-data www-data
 RUN set -ex \
 	apk update && \
 	# install prerequsitions
-	apk add  --no-cache openssl curl ca-certificates gettext && \
+	apk add  --no-cache openssl curl ca-certificates && \
 	# install nginx
 	printf "%s%s%s%s\n" \
 	"@nginx " \
@@ -28,6 +28,7 @@ EXPOSE 443
 COPY tools/entrypoint.sh /tmp/entrypoint.sh
 RUN chmod +x /tmp/entrypoint.sh
 COPY conf/conf.template /tmp/conf.template
+COPY tools/index.html /tmp/index.html
 
 STOPSIGNAL SIGQUIT
 

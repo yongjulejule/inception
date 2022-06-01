@@ -1,6 +1,23 @@
 version: "3"
 
 services:
+  static:
+    image: inception_static:v1
+
+    depends_on:
+      - nginx
+    container_name: "static"
+
+    build:
+      context: ./requirements/bonus/static
+
+    networks:
+      inception_intra:
+        ipv4_address: 172.10.0.46
+    ports:
+      - "8080:8080"
+    restart: "always"
+
   adminer:
     image: inception_adminer:v1
 

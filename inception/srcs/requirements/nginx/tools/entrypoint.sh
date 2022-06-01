@@ -20,7 +20,7 @@ else
 fi
 
 set +e
-nginx -t >/dev/null 2>&1
+nginx -t >/dev/null 
 if [ $? -ne 0 ]; then
 	echo "nginx does not work... please check configure!" >&2
 	exit 1
