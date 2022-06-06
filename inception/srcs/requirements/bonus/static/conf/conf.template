@@ -1,5 +1,6 @@
 server {
 	listen 8080;
+	server_name inception;
 
 	location / {
 		root /var/www/html;

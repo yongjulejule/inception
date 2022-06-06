@@ -1,6 +1,30 @@
 version: "3"
 
 services:
+  cadvisor:
+    image: inception_cadvisor:v1
+
+    container_name: "cadvisor"
+    build:
+      context: ./requirements/bonus/cadvisor
+
+    networks:
+      inception_intra:
+        ipv4_address: 172.10.0.47
+    expose:
+      - "8080"
+    restart: "always"
+
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    privileged: true
+
   static:
     image: inception_static:v1
 
@@ -14,8 +38,10 @@ services:
     networks:
       inception_intra:
         ipv4_address: 172.10.0.46
-    ports:
-      - "8080:8080"
+    # ports:
+    #   - "8080:8080"
+    expose:
+      - "8080"
     restart: "always"
 
   adminer:

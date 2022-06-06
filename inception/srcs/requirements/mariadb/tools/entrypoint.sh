@@ -23,7 +23,6 @@ if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
 	cat << EOF > $tmpfile
 USE mysql;
 FLUSH PRIVILEGES;
-GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
 GRANT ALL ON *.* TO 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD' WITH GRANT OPTION ;
 SET PASSWORD FOR 'root'@'localhost'=PASSWORD('${MYSQL_ROOT_PASSWORD}') ;
 DROP DATABASE IF EXISTS test;
@@ -43,8 +42,10 @@ EOF
 	echo "GRANT ALL ON $MYSQL_DATABASE.* to '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';" >> $tmpfile
 
 	set +e
+	# Run MariaDB Server as background
 	/usr/bin/mysqld_safe &
 
+	# Check MariaDB server started.
 	echo "for loop until MariaDB server set up"
 	for i in `seq 1 30`; do
 		mysqladmin ping > /dev/null 2>&1
@@ -60,6 +61,7 @@ EOF
 		sleep 1
 	done
 
+	# Run query 
 	mariadb < $tmpfile
 	if [ $? -ne 0 ]; then
 		echo "The root already exist. Login as root..."
