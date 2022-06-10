@@ -5,10 +5,14 @@ set -e
 if [ ! -f .setup ]; then
 	echo "Setting up Nginx"
 	envsubst '${DOMAIN_NAME}' < /tmp/conf.template > /etc/nginx/conf.d/default.conf
-	openssl req -new -newkey rsa:2048 -nodes -keyout \
+	# generate private key by ECDSA prime 256 curve algorithm
+	# generate Certificate Signing Request
+	openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -keyout \
 	/etc/nginx/${DOMAIN_NAME}.key -out \
 	/etc/nginx/${DOMAIN_NAME}.csr -subj \
 	"/C=KR/ST=Seoul/L=gae-po/O=SecureSignKR/OU=42-Seoul/CN=${DOMAIN_NAME}"
+	# x509 : for self-signed certificate
+	# crt : certifate
 	openssl x509 -req -days 365 -in /etc/nginx/${DOMAIN_NAME}.csr \
 	-signkey /etc/nginx/${DOMAIN_NAME}.key \
 	-out /etc/nginx/${DOMAIN_NAME}.crt
