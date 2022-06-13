@@ -7,7 +7,7 @@ if [ ! -f .setup ]; then
 	envsubst '${DOMAIN_NAME}' < /tmp/conf.template > /etc/nginx/conf.d/default.conf
 	# generate private key by ECDSA prime 256 curve algorithm
 	# generate Certificate Signing Request
-	openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -keyout \
+	openssl req -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -keyout \
 	/etc/nginx/${DOMAIN_NAME}.key -out \
 	/etc/nginx/${DOMAIN_NAME}.csr -subj \
 	"/C=KR/ST=Seoul/L=gae-po/O=SecureSignKR/OU=42-Seoul/CN=${DOMAIN_NAME}"
