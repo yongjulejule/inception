@@ -23,8 +23,6 @@ RUN set -ex \
 	touch /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
 
-EXPOSE 443
-
 COPY tools/entrypoint.sh /tmp/entrypoint.sh
 RUN chmod +x /tmp/entrypoint.sh
 COPY conf/conf.template /tmp/conf.template

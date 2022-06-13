@@ -1,5 +1,5 @@
 server {
-	listen 8080;
+	listen 4242;
 	server_name inception;
 
 	location / {

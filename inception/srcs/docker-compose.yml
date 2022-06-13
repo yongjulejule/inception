@@ -4,6 +4,14 @@ services:
   cadvisor:
     image: inception_cadvisor:v1
 
+    depends_on:
+      - nginx
+      - mariadb
+      - static
+      - adminer
+      - wordpress
+      - ftp
+
     container_name: "cadvisor"
     build:
       context: ./requirements/bonus/cadvisor
@@ -41,7 +49,7 @@ services:
     # ports:
     #   - "8080:8080"
     expose:
-      - "8080"
+      - "4242"
     restart: "always"
 
   adminer:
