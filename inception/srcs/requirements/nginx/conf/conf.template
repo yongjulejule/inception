@@ -28,7 +28,7 @@ server {
 		location /inception/ {
 			proxy_pass	http://static:4242;
 		}
-		
+
 		location /cadvisor/ {
 			proxy_pass http://172.10.0.47:8080/;
 			proxy_redirect ~^/containers/ /cadvisor/containers/;

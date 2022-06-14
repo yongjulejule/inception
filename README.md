@@ -19,13 +19,23 @@
 	- [fastCGI](#fastcgi)
 		- [CGI](#cgi)
 - [Nginx](#nginx)
+- [Nginx-config](#nginx-config)
+	- [Nginx TLS](#nginx-tls)
+	- [Nginx fastCGI](#nginx-fastcgi)
+		- [php-fpm](#php-fpm)
+		- [Nginx fcgi](#nginx-fcgi)
+	- [Nginx proxy](#nginx-proxy)
 - [Redis](#redis)
 - [FTP (File Transport Protocol)](#ftp-file-transport-protocol)
+	- [active mode](#active-mode)
+	- [passive mode](#passive-mode)
+	- [FTP의 장단점](#ftp의-장단점)
+		- [장점](#장점)
+		- [단점](#단점)
+	- [FTP vs HTTP](#ftp-vs-http)
+	- [ftp-server for linux](#ftp-server-for-linux)
 
-
-Inception Structure:
-
-![Screen Shot 2022-06-06 at 2.29.28 PM.png](/asset/Screen_Shot_2022-06-06_at_2.29.28_PM.png)
+![Screen Shot 2022-06-06 at 2.29.28 PM.png](./asset/Screen_Shot_2022-06-06_at_2.29.28_PM.png)
 
 # Docker
 
@@ -35,7 +45,7 @@ Inception Structure:
 
 컨테이너 기술은 그 전부터 존재했으며 도커는 이를 정말 잘 활용할 수 있도록 만들어졌을 뿐임.
 
-![docker-architecture.jpeg](/asset/docker-architecture.jpeg)
+![docker-architecture.jpeg](./asset/docker-architecture.jpeg)
 
 이와 같이 다양한 기능을 제공하는데, client(shell or docker desktop app)에서 명령을 하면 Docker daemon이 이미지와 컨테이너를 관리하고, 필요하면 Registry(주로 Docker hub)에서 이미지를 가져오기도 함.
 
@@ -43,11 +53,11 @@ Inception Structure:
 
 도커와 가상머신은 독립된 환경을 제공한다는 점에서 유사하고, 직접 컨테이너를 사용하면 vm과 큰 차이가 없어 보이지만 컨테이너가 가상머신보다 성능이 훨씬 좋다는 이점이 있음.
 
-이런 차이는 환경을 구축하는 방식에서 비롯되는데, VM의 경우는 호스트 머신 위에 가상화나 반-가상화를 통하여 새로운 os를 구축하고, 그 위에서 작동하는 방식이지만 도커 컨테이너의 경우는 호스트 머신 위에서 리눅스 커널의 namespace, cgroup 기능을 통해 작동하기 때문에 훨씬 가볍고 성능이 좋음. [docker container](https://www.notion.so/Inception-21fd30ee659447aba0f22e41318e687a) 참고
+이런 차이는 환경을 구축하는 방식에서 비롯되는데, VM의 경우는 호스트 머신 위에 가상화나 반-가상화를 통하여 새로운 os를 구축하고, 그 위에서 작동하는 방식이지만 도커 컨테이너의 경우는 호스트 머신 위에서 리눅스 커널의 namespace, cgroup 기능을 통해 작동하기 때문에 훨씬 가볍고 성능이 좋음. [docker container 참고](#docker-container)
 
-또한 도커 컨테이너를 생성하기 위해 만드는 이미지 파일도 레이어로 분할되어 생성되기 때문에 변경점이 있다면 그 레이어만 업데이트하고, 나머지는 캐시되어 있는 데이터를 활용할 수 있기 때문에 이미지 생성 시간이 단축됨. [docker image](https://www.notion.so/Inception-21fd30ee659447aba0f22e41318e687a) 참고
+또한 도커 컨테이너를 생성하기 위해 만드는 이미지 파일도 레이어로 분할되어 생성되기 때문에 변경점이 있다면 그 레이어만 업데이트하고, 나머지는 캐시되어 있는 데이터를 활용할 수 있기 때문에 이미지 생성 시간이 단축됨. [docker image](#docker-image) 참고
 
-![Docker-containerized-and-vm-transparent-bg.jpg](/asset/Docker-containerized-and-vm-transparent-bg.jpg)
+![Docker-containerized-and-vm-transparent-bg.jpg](./asset/Docker-containerized-and-vm-transparent-bg.jpg)
 
 하지만 단점도 존재하는데, process-level의 격리이기 때문에, 상대적으로 보안이 좋지 않음.
 
@@ -57,28 +67,30 @@ Inception Structure:
 
 이때 각 instruction에 따라 layer된 이미지를 생성하는데, 그 구조는 아래와 같음.
 
-![docker-container-layers.jpg](/asset/docker-container-layers.jpg)
+![docker-container-layers.jpg](./asset/docker-container-layers.jpg)
 
 각 layer는 READ-ONLY이며 union file system를 통하여 최상위 layer에서 일관성 있는 파일 구조를 확인할 수 있게 됨.
 
 이렇게 layer화된 구조를 가져서, 특정 instruction이 변경되면 모든 이미지를 다시 빌드하는게 아니라, 변경점이 있는 layer부터 빌드할 수 있고, 이전 layer는 cache를 이용하여 빠르게 빌드할 수 있음
 
-- 시간 비교
-    
-    *첫 빌드*
-    
-    ![docker-image-build-1.png](/asset/docker-image-build-1.png)
-    
-    *같은 이미지를 다시 빌드했을 때*
-    
-    ![docker-image-build-2.png](/asset/docker-image-build-2.png)
-    
-    *layer 2를 변경했을 때*
-    
-    ![docker-image-build-3.png](/asset/docker-image-build-3.png)
-    
-    `time` 명령어를 이용하면 확연한 시간 차이를 볼 수 있음.
-    
+<details>
+<summary>시간 비교</summary>
+
+*첫 빌드*
+
+![docker-image-build-1.png](./asset/docker-image-build-1.png)
+
+*같은 이미지를 다시 빌드했을 때*
+
+![docker-image-build-2.png](./asset/docker-image-build-2.png)
+
+*layer 2를 변경했을 때*
+
+![docker-image-build-3.png](./asset/docker-image-build-3.png)
+
+`time` 명령어를 이용하면 확연한 시간 차이를 볼 수 있음.
+
+</details>
 
 이렇게 READ-ONLY로 만들어진 이미지 위에 R/W인 Container layer를 올리고, 이 layer에서 작업하기 때문에 컨테이너에서 파일을 생성하거나 삭제해도 image layer에는 영향이 없음.
 
@@ -88,25 +100,27 @@ Inception Structure:
 
 ## Docker container
 
-컨테이너는 이미지를 통해 생성되는 instance로, 독립된 환경을 제공해주는 프로세스임. [docker image](https://www.notion.so/docker/docker-image.md)에서 기술한 것 처럼, 이미지 위에 R/W layer를 올린 형태이며, 컨테이너가 삭제되면 작업 내역도 모두 사라짐.
+컨테이너는 이미지를 통해 생성되는 instance로, 독립된 환경을 제공해주는 프로세스임. [docker image](#docker-image)에서 기술한 것 처럼, 이미지 위에 R/W layer를 올린 형태이며, 컨테이너가 삭제되면 작업 내역도 모두 사라짐.
 
 하나의 빈 레이어만 생성하면 되기 때문에 매우 빠르게 생성할 수 있음!
 
-![docker-container-layer.jpg](/asset/docker-container-layer.jpg)
+![docker-container-layer.jpg](./asset/docker-container-layer.jpg)
 
 > 출처 : docker 공식문서
 > 
 
 각 컨테이너는 완전히 새로운 환경을 생성한 것 처럼 작동하며 root 디렉토리, pid, 네트워크, 메모리, cpu등을 새롭게 구성할 수 있음.
 
-이는 리눅스 커널의 [namespace와 cgroup](https://www.notion.so/linux/namespace.md)라는 기능으로 구현됨!
+이는 리눅스 커널의 [namespace와 cgroup](https://github.com/yongjulejule/TIL/blob/main/linux/namespace.md)라는 기능으로 구현됨!
 
 결국, vm과 다르게 컨테이너는 Host os에서 native로 작동하기 때문에 훨씬 가볍고 빠름.(리눅스가 아닌 환경에서는 docker app이 리눅스 환경으로 가상화를 하여 작동함.)
 
-![linux-namespace-comp2.png](/asset/linux-namespace-comp2.png)
+![linux-namespace-comp2.png](./asset/linux-namespace-comp2.png)
 
 > 컨테이너 프로세스와 init 프로세스의 namespace 비교
 > 
+
+TODO: 컨테이너 프로세스의 pid 여러개 찍히는거 보여주는 이미지 넣기
 
 ### pid 1
 
@@ -205,7 +219,7 @@ VOLUME [마운트 포인트]
 
 LAMP(Linux + Apache + MySQL + PHP) 스택 이라는 가장 널리 사용되는 웹 앱에 대한 소프트웨어 스택이 있음. 모두 오픈소스 소프트웨어로 상용 패키지를 대체할 수 있음을 소개하기 위해 1998년에 나온 용어이며 워드프레스 같은 웹 프레임워크를 호스팅 하기에 충분한 최초의 오픈소스 소프트웨어 스택 중 하나여서 이 용어와 개념이 인기를 얻음.
 
-![Untitled](/asset/Untitled.png)
+![LAMP 스택](./asset/LAMP.png)
 
 > 출처 : [https://en.wikipedia.org/wiki/LAMP_(software_bundle)](https://en.wikipedia.org/wiki/LAMP_(software_bundle))
 > 
@@ -222,16 +236,16 @@ Wordpress는 호스팅 서버가 따로 필요하고, DB와 연결되어 작동�
 - 어떤 언어로든 작성될 수 있으며 url에 `<protocol>://<domain>/(cgi-bin/<cgi_program_name>|<program>.cgi)` 방식을 주로 씀. 만약 URL에 query string이 있으면 환경변수로 QUERY_STRING이 설정되어 cgi 프로그램에서 사용할 수 있음.
 - `CGI` 프로그램이 요청된 작업을 수행하고 `html`문서 형태로 `stdout`으로 쏴주면, 서버가 받아서 `html` 문서를 유저에게 쏴주는 방식.
     
-    ![cgi.001.jpeg](/asset/cgi.001.jpeg)
+    ![inception_image.001.jpeg](./asset/inception_image.001.jpeg)
     
 - 하지만 1 요청당 1 프로세스를 생성하고, 요청이 끝나면 프로세스가 종료되는 방식이라서 성능이 구림
     
-    ![cgi.002.jpeg](/asset/cgi.002.jpeg)
+    ![inception_image.002.jpeg](./asset/inception_image.002.jpeg)
     
 - FastCGI는 프로세스들을 생성해두고, 한 프로세스당 여러개의 요청을 계속 처리함.
 - FastCGI가 메모리를 더 많이 소모하지만 더 빠름!
     
-    ![cgi.003.jpeg](/asset/cgi.003.jpeg)
+    ![inception_image.003.jpeg](./asset/inception_image.003.jpeg)
     
 
 php-fpm은 php에서 공식적으로 FastCGI를 지원하면서 만들어진것. (PHP Fastcgi Process Manager)
@@ -258,13 +272,12 @@ Nginx는 마스터 프로세스가 있어서 config를 읽고 검증한 후 그�
 
 - 프록시
     
-    ![cgi.006.jpeg](/asset/cgi.006.jpeg)
+    ![inception_image.006.jpeg](./asset/inception_image.006.jpeg)
     
     - 프록시는 서버와 클라이언트 사이에서 중계역할을 함.  요청을 받으면 프록시 서버를 거쳐 다음 목적지로 가는것. 이는 보안상의 이유로 사용할 수 있고 프록시 서버에서 캐싱을 통해 빠르게 요청에 응답할 수 있다는 장점도 있음.
     - Forward Proxy (proxy)
         - Forward Proxy는 대상에 접근하기 전에 proxy를 거쳐서 접근하는 거임. 만약 보안상 위험이 있거나 악의적인 접근이 있다면 여기서 접근을 제한할 수 있음. 방화벽같은 경우 서버에 접근을 한 뒤 막아주지만 프록시는 문제가 있다면 프록시 서버에서 더이상 진행되지 않기 때문에 이점이 있음.
         - proxy와 vpn(virtual private network)이 비교되는데, proxy는 application level에서 ip만 암호화가 되는 것이고, vpn은 OS level에서 암호화 되기 때문에 ip 뿐만 아니라 모든 데이터가 암호화됨.
-        - 
     - Reverse Proxy
         - Reverse Proxy는 클라이언트 입장에서 그냥 서버로 요청을 보내는 것 처럼 보임. 하지만 서버 측에 리버스 프록시가 있어서, 서버로 오는 모든 요청은 리버스 프록시를 거침. 이는 다양한 장점을 가져옴.
             - 정적 컨텐츠를 캐싱하여 요청에 빠르게 응답할 수 있음
@@ -273,49 +286,233 @@ Nginx는 마스터 프로세스가 있어서 config를 읽고 검증한 후 그�
 - Load balancing
     - Load balancing(부하 분산)은 요청이 너무 많아 여러대의 서버가 필요할때 사용함. 클라이언트의 요청을 가용한 적절한 서버에 보내서 처리함. 만약 서버 하나가 다운되어도 다른 서버에 요청을 전달하면 되니 안정성이 높아지고, 설정이 간단해서 확장성도 좋음. Nginx에선 어떤 방식으로 분산시킬지 정할 수 있음.
     - application level (HTTP level)의 로드벨런싱은 리버스 프록시와 비슷하지만, 리버스 프록시는 HTTP 요청에 국한되는 반면 로드밸런싱은 다른 계층에 대하여도 조절할 수 있음. Nginx에서 제공하는 Load balancing은 HTTP 한정임.
-    
-    [https://oxylabs.io/blog/reverse-proxy-vs-forward-proxy](https://oxylabs.io/blog/reverse-proxy-vs-forward-proxy)
-    
-    [https://dzone.com/articles/nginx-reverse-proxy-and-load-balancing](https://dzone.com/articles/nginx-reverse-proxy-and-load-balancing)
-    
-    [https://www.upguard.com/blog/reverse-proxy-vs-load-balancer](https://www.upguard.com/blog/reverse-proxy-vs-load-balancer)
-    
-    [https://www.digitalocean.com/community/tutorials/understanding-nginx-http-proxying-load-balancing-buffering-and-caching](https://www.digitalocean.com/community/tutorials/understanding-nginx-http-proxying-load-balancing-buffering-and-caching)
-    
 - Nginx with SSL
     - Nginx를 리버스 프록시 서버를 사용하여 모든 요청에 대해 https 연결을 요구할 수 있음.
     - 각 앱마다 SSL을 적용하는건 몹시 힘듦!
     - 하지만 Nginx에서 SSL을 적용하고 리버스 프록시로 활용하여 내부 다른 서버와 소통하면 간단하게 해결됨.
-
-TODO: 여기서부터 정리하기
-- SSL, TLS란?
-- [https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/)
-- [https://www.cloudflare.com/ko-kr/learning/ssl/transport-layer-security-tls/](https://www.cloudflare.com/ko-kr/learning/ssl/transport-layer-security-tls/)
-- [https://opentutorials.org/course/228/4894](https://opentutorials.org/course/228/4894)
-- [https://freecontent.manning.com/how-does-tls-work/](https://freecontent.manning.com/how-does-tls-work/)
-- [https://www.ibm.com/docs/en/ibm-mq/7.5?topic=mechanisms-cryptographic-security-protocols-tls-ssl](https://www.ibm.com/docs/en/ibm-mq/7.5?topic=mechanisms-cryptographic-security-protocols-tls-ssl)
+- [SSL, TLS란?](https://github.com/yongjulejule/TIL/blob/main/protocol/SSL-TLS.md)
     - 보안 프로토콜. application layer 하단에 위치함. HTTPS 뿐만 아니라 다른 프로토콜도 암호화 가능 (ftps)
     - TLS(Transport Layer Security)는 SSL(Secure Sockets Layer)이 업데이트 되면서 명칭이 바뀐것.
         - 처음에 SSL로 시작하여 3.0까지 배포되었다가, SSL을 기반으로 다시 만든게 TLS 1.0 이며 SSL은 이제 추방됨.
         - 현재 SSL 인증서라 하면 모두 TLS 인증서임. 관례적으로 SSL이라는 용어를 사용하는것.
-    - 어떻게 작용하는지?
-        - TCP handshaking 이후 TLS handshaking이 작동하여 검증함
+    - 연결을 활성화 시키기 전에, TLS handshake 과정을 통하여 암호화된 연결을 수립하고, 이 연결을 통하여 통신함. 이때 신뢰성, 무결성, 개인정보 보호가 보장됨.
 
-![cgi.004.jpeg](/asset/cgi.004.jpeg)
+# Nginx-config
 
-[https://ssdragon.tistory.com/60](https://ssdragon.tistory.com/60)
+nginx config 파일은 여러 모듈들 단위로 작성됨. `/etc/nginx/nginx.conf`에 base module이 정의되어 있고 `/etc/nginx/conf.d/`추가적인 모듈들을 정의함.
 
-[https://medium.com/@su_bak/nginx-nginx란-cf6cf8c33245](https://medium.com/@su_bak/nginx-nginx%EB%9E%80-cf6cf8c33245)
+user, worker_process, error_log, pid 등 다양한 설정을 할 수 있으며 아래와 같이 블록 단위로 설정함.
+
+자세한 내용은 [링크](https://server-talk.tistory.com/303) 참고
+
+```
+user  www-data;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log notice;
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+
+# /etc/nginx/conf.d/default.conf
+
+	server {
+			...
+			location / {
+					...
+					proxy_pass <http://backend:3000>;
+			}
+	}
+
+```
+
+## Nginx TLS
+
+TLS에 대한 설명은 [링크](https://github.com/yongjulejule/TIL/blob/main/protocol/SSL-TLS.md) 참조
+
+```
+server {
+    listen       443 ssl http2;
+    server_name  ${DOMAIN_NAME};
+
+    access_log  /var/log/nginx/${DOMAIN_NAME}.access.log  main;
+
+    location / {
+        root   /var/www/html/wordpress;
+        index  index.php index.html index.htm;
+    }
+
+    ssl_certificate           ${DOMAIN_NAME}.crt;
+    ssl_certificate_key       ${DOMAIN_NAME}.key;
+    ssl_session_timeout       5m;
+    ssl_protocols             TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+	...
+}
+
+```
+
+위와 같은 방식으로 nginx에 TLS 설정을 할 수 있음.
+
+`ssl_certificate` : 인증서 파일의 위치
+`ssl_certificate_key` : 인증서 파일의 키 파일의 위치
+`ssl_session_timeout` : TLS 세션 유효시간
+`ssl_protocols` : 사용할 프로토콜
+`ssl_ciphers` : 사용할 암호화 방식 기본값은 `HIGH:!aNULL:!MD5` 이며 `openssl ciphers -v "HIGH:!aNULL:!MD5"` 명령어에 대응되는 암호화 방식이 모두 포함됨. [openssl 참고](https://www.notion.so/openssl/openssl.md),
+`ssl_prefer_server_ciphers` : TLS 암호화 방식 협상 과정에서 서버측 암호화 방식 우선.
+
+더 많은 정보는 [nginx ssl config](http://nginx.org/en/docs/http/ngx_http_ssl_module.html)[openssl ciphers](https://www.openssl.org/docs/manmaster/man1/openssl-ciphers.html) 참고
+
+## Nginx fastCGI
+
+### php-fpm
+
+php-fpm은 php를 fcgi모드로 동작하게 해주며, 다양한 최적화가 되어있음
+
+[상세정보](https://opentutorials.org/module/384/4332)
+
+### Nginx fcgi
+
+nginx에는 fcgi을 위한 다양한 config 옵션을 지원함
+
+```
+location ~ \\.php$ {
+   fastcgi_pass   wordpress:9000;
+   fastcgi_index  index.php;
+   fastcgi_param  SCRIPT_FILENAME  /var/www/html/wordpress$fastcgi_script_name;
+   include        fastcgi_params;
+}
+
+```
+
+`fastcgi_pass` : 해당 url로 들어온 요청에 대하여 php-fpm과 nginx을 연결하기 위한 인터페이스를 지정.
+`fastcgi_index` : 요청된 URL이 / 로 끝날때 자동으로 덧붙임
+`fastcgi_param` : 요청이 fastCGI로 전달되도록 구성하는 지시어.
+
+## Nginx proxy
+
+Nginx를 reverse proxy로 활용하기 위한 설정이며 특정 url의 포트로 보낼 뿐만 아니라 http 버젼, 헤더, 버퍼 등을 설정할 수 있음.
+
+```
+location /backend {
+		proxy_pass <http://backend:3000>;
+		proxy_http_version 1.1;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-Host $host;
+		proxy_set_header X-Forwarded-Port $server_port;
+}
+
+```
+
+`proxy_pass` : 요청이 들어오면 어떤 url로 전달되는지 지정
+`proxy_http_version` : http 버전 지정
+`proxy_set_header` : 요청에 대한 헤더 설정
+
+![inception_image.004.jpeg](./asset/inception_image.004.jpeg)
 
 # Redis
 
-- 얘는 뭐길래 mariadb같은거보다 훨씬 빠르다고 추앙받음?
-    - NoSQL, in-memory database로 메모리에 I/O 작업을 하기 때문에 훨씬 빠름.
-    - 종료시 및 특정 시점마다 디스크에 저장하는 방식으로 작동
-- 어떻게 빨라진거?
+- NoSQL, in-memory database로 메모리에 I/O 작업을 하기 때문에 desk I/O 보다 훨씬 빠름.
+- 종료시 및 특정 시점마다 디스크에 저장하는 방식으로 작동
+- 단일 쓰레딩 모델으로 컨텍스트 스위칭이나 락의 비용이 없음.
+- Non-Blocking I/O 모델로 단일 쓰레드임에도 빠름
+- 어느정도 데이터가 쌓였을때, 혹은 종료할때 dump.rdb 란 파일에 내용을 저장하여 종료하여도 데이터가 남아있음.
 
 # FTP (File Transport Protocol)
 
-- file을 위해 특별한 프로토콜이 왜 필요했을까?
-- 어느 이점이 있을까?
-- FTP + SSL/TLS 는 없나?
+FTP는 파일 전송 프로토콜으로, 서버와 클라이언트 사이에 파일을 전송하기 위해 나온 것임. 1971년에 나왔으며 연결하기 위해선 로그인을 해야함(서버가 허용한 경우 익명 사용자 가능).하지만 이런 정보가 plaintext 형태로 넘어가기 때문에 보안상 상당히 취약하며, 2021년에 대부분 브라우저에서 지원을 중단하고 SFTP(ssh + FTP) 나 FTPS(FTP + TLS)를 사용함.
+
+이 FTP는  파일 전송을 위해 두개의 포트를 사용하며 한 포트는 연결을 위해 사용하고(command port)  다른 포트는 데이터 전송을 위해 사용하며(data port) 여기서 passive mode와 active mode로 나뉨.
+
+command port를 위해선 통상적으로 21번 포트를 사용하지만 data port는 passive mode와 active mode에서 서로 다름.
+
+## active mode
+
+active mode에서는 다음과 같이 진행됨
+
+1. 클라이언트에서 임의의 포트(N > 1023)를 FTP 서버의 21번 포트에 연결함. (command port)
+2. 클라이언트에서 data port로 쓸 N+1번 포트의 정보를 서버에게 넘겨줌.
+3. 서버는 20번 포트(데이터 포트)에서 클라이언트의 N+1 포트로 연결함. (data port)
+
+![inception_image.007.jpeg](./asset/inception_image.007.jpeg)
+
+이때 client측에서 문제가 발생함. client는 서버와 data port로 실제로 연결된게 아니며 단순히 서버에게 data port를 위하여 어떤 포트를 Listening 할건지 알려주는 거임. 서버측에서 data port로 연결하려고 하면 클라이언트측 방화벽에선 그저 외부 시스템에서 연결을 하려는 것으로 보이기 때문에 방화벽에 막힘.
+
+## passive mode
+
+active mode의 문제를 해결하기 위해 등장한 방법이 passive mode이며 PASV라고도 불림.
+
+passive mode FTP에서 클라이언트는 두 연결을 모두 시작하여 방화벽 문제를 해결함.
+
+1. FTP연결을 열 때 클라이언트는 두개의 랜덤 포트를 로컬에서 열음.(N>1023, N+1)
+2. 첫번째 포트는 서버의 21번 포트에 연결됨.(command port)
+3. 클라이언트가 psav 명령을 보내서 서버에서 랜덤 포트 P (p > 1023)을 열고 클라이언트에게 P를 알려줌.
+4. 클라이언트는 N+1에서 P로 연결함. (data port)
+
+![inception_image.008.jpeg](./asset/inception_image.008.jpeg)
+
+여기서 서버가 특정 포트들을(data port) 열어둬야 한다는 문제가 발생함. 하지만 서버측에서 특정 포트 범위를 data port로 쓰도록 설정하여 문제를 해결할 수 있음.
+
+또한 passive mode를 지원하지 않는 클라이언트가 있을 수 있으나 요즘엔 그런거 없음.
+
+[active FTP vs passive FTP](http://slacksite.com/other/ftp.html)
+
+## FTP의 장단점
+
+### 장점
+
+- 여러 파일과 폴더를 전송 가능.
+- 연결이 끊어지면 전송 재개 가능.
+- 전송할 파일의 크기 제한이 없음.
+- HTTP보다 빠른 데이터 전송.
+- 많은 FTP client가 파일 전송 예약을 지원함.
+
+### 단점
+
+- 내용이 그대로 가서 보안상 매우 좋지 않음.(전송되는 데이터 뿐만 아니라 로그인할때 사용하는 id, password까지 텍스트 그대로 전송됨)
+- 적은 용량의 파일을 여러 클라이언트에 연결해야 하는 경우 비효율적임. (이를 위해 HTTP가 나옴)
+
+## FTP vs HTTP
+
+| FTP | HTTP |
+| --- | --- |
+| 인증이 필요함 | 인증이 필요하지 않음 |
+| 대용량 파일 전송에 효율적 | 작은 파일을 전송할 때 효율적 |
+| 파일이 메모리에 저장됨 | 메모리에 저장되지 않음 |
+| 클라이언트와 서버간에 파일을 다운로드하고 업로드 할때 사용 | 웹페이지 전송에 사용 |
+| 상태(state)를 저장하는 프로토콜 | 상태를 저장하지 않는(stateless) 프로토콜 |
+| 양방향 통신 시스템 지원 | 단방향 통신 시스템 |
+| data connection, command connection으로 나뉨 | data connection만 있음 |
+
+[how ftp works?](https://afteracademy.com/blog/what-is-ftp-and-how-does-an-ftp-work)
+
+## ftp-server for linux
+
+리눅스의 ftp-server 프로그램으로 vsftp, pro-ftp, pure-ftp등 다양한 프로그램이 있는데, alpine linux와 호환이 잘되는 vsftp를 선택.
+
+ftp 특성상 로그인하여 접속하게 되므로 적절한 유저를 잘 생성해줘야 하고, 파일시스템에 접근하기 때문에 권한 설정도 잘 해줘야함. 외부에서 접근할 수 있는 디렉토리를 config파일에 정의해서 특정 디렉토리에만 접근하게 해주고, container로 관리하기 위해 로깅 및 background 설정 정도를 해주면 filezilla를 통해 손쉽게 접근 가능해짐.
+
+[vsftpd config](https://2factor.tistory.com/96) 참조
