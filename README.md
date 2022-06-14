@@ -53,7 +53,7 @@
 
 도커와 가상머신은 독립된 환경을 제공한다는 점에서 유사하고, 직접 컨테이너를 사용하면 vm과 큰 차이가 없어 보이지만 컨테이너가 가상머신보다 성능이 훨씬 좋다는 이점이 있음.
 
-이런 차이는 환경을 구축하는 방식에서 비롯되는데, VM의 경우는 호스트 머신 위에 가상화나 반-가상화를 통하여 새로운 os를 구축하고, 그 위에서 작동하는 방식이지만 도커 컨테이너의 경우는 호스트 머신 위에서 리눅스 커널의 namespace, cgroup 기능을 통해 작동하기 때문에 훨씬 가볍고 성능이 좋음. [docker container 참고](#docker-container)
+이런 차이는 환경을 구축하는 방식에서 비롯되는데, vm의 경우는 호스트 머신 위에 가상화나 반-가상화를 통하여 새로운 os를 구축하고, 그 위에서 작동하는 방식이지만 도커 컨테이너의 경우는 호스트 머신 위에서 리눅스 커널의 namespace, cgroup 기능을 통해 작동하기 때문에 훨씬 가볍고 성능이 좋음. [docker container 참고](#docker-container)
 
 또한 도커 컨테이너를 생성하기 위해 만드는 이미지 파일도 레이어로 분할되어 생성되기 때문에 변경점이 있다면 그 레이어만 업데이트하고, 나머지는 캐시되어 있는 데이터를 활용할 수 있기 때문에 이미지 생성 시간이 단축됨. [docker image](#docker-image) 참고
 
@@ -75,6 +75,18 @@
 
 <details>
 <summary>시간 비교</summary>
+
+다음과 같은 `Dockerfile`을 가지고 이미지를 빌드해보자.
+
+```Dockerfile
+FROM alpine:3.14
+
+RUN echo "here is layer 1"
+RUN echo "here is layer 2"
+RUN echo "here is layer 3"
+
+ENTRYPOINT [ "/bin/sh" ]
+```
 
 *첫 빌드*
 
@@ -161,9 +173,9 @@ Docker 공식 문서는 volume 마운트를 사용하길 강력이 추천하지�
 
 # Docker in Inception
 
-일반적으론 docker hub에 official image들로 mariadb, nginx, wordpress-phpfpm 등 다양한 컨테이너들을 손쉽게 구동할 수 있지만 alpine이나 debian의 베이스 이미지에서 서비스를 위한 Dockerfile을 직접 작성해야함.
+일반적으론 docker hub에 official image들로 mariadb, nginx, wordpress php-fpm 등 다양한 컨테이너들을 손쉽게 구동할 수 있지만 alpine이나 debian의 베이스 이미지에서 서비스를 위한 Dockerfile을 직접 작성해야함.
 
-alpine 리눅스는 굉장히 경량화된 리눅스로 가벼운게 이점인 컨테이너의 특성 때문에 docker image의 베이스로 상당히 많이 쓰이기 때문에 alpline linux로 base를 잡음.
+alpine 리눅스는 굉장히 경량화된 리눅스로 가벼운게 이점인 컨테이너의 특성 때문에 docker image의 베이스로 상당히 많이 쓰이기 때문에 alpine linux로 base를 잡음.
 
 Dockerfile은 다음과 workflow로 작성함
 
@@ -185,7 +197,7 @@ CMD ["서비스를 실행하는 커맨드"]
 VOLUME [마운트 포인트]
 ```
 
-필요한 패키지를 다운로드 받는 과정은 주로 Dockerfile의 RUN 커맨드를 활용하여 image cache를 활용하기 쉽게 구성하였고, 해당 컨테이너에서 서비스를 가동하기 위한 작업은 `entrypoint.sh` 에서 쉘 스크립트를 이용하여 작성함.
+필요한 패키지를 다운로드 받는 과정은 주로 `Dockerfile`의 `RUN` 커맨드를 활용하여 image cache를 활용하기 쉽게 구성하였고, 해당 컨테이너에서 서비스를 가동하기 위한 작업은 `entrypoint.sh` 에서 쉘 스크립트를 이용하여 작성함.
 
 # MariaDB
 
@@ -232,8 +244,8 @@ Wordpress는 호스팅 서버가 따로 필요하고, DB와 연결되어 작동�
 
 ### CGI
 
-- Common Gateway Interfaced의 약자. html만 제공하다가 외부 앱과 상호작용을 할 필요성을 느껴서 나온 동적 페이지를 제공하기 위한 규격화된 약속. 웹서버와 서로 데이터를 주고받는 방식으로 작동함!
-- 어떤 언어로든 작성될 수 있으며 url에 `<protocol>://<domain>/(cgi-bin/<cgi_program_name>|<program>.cgi)` 방식을 주로 씀. 만약 URL에 query string이 있으면 환경변수로 QUERY_STRING이 설정되어 cgi 프로그램에서 사용할 수 있음.
+- Common Gateway Interfaced의 약자. `html`만 제공하다가 외부 앱과 상호작용을 할 필요성을 느껴서 나온 동적 페이지를 제공하기 위한 규격화된 약속. 웹서버와 서로 데이터를 주고받는 방식으로 작동함!
+- 어떤 언어로든 작성될 수 있으며 url에 `<protocol>://<domain>/(cgi-bin/<cgi_program_name>|<program>.cgi)` 방식을 주로 씀. 만약 URL에 query string이 있으면 환경변수로 `QUERY_STRING`이 설정되어 `CGI` 프로그램에서 사용할 수 있음.
 - `CGI` 프로그램이 요청된 작업을 수행하고 `html`문서 형태로 `stdout`으로 쏴주면, 서버가 받아서 `html` 문서를 유저에게 쏴주는 방식.
     
     ![inception_image.001.jpeg](./asset/inception_image.001.jpeg)
@@ -242,15 +254,15 @@ Wordpress는 호스팅 서버가 따로 필요하고, DB와 연결되어 작동�
     
     ![inception_image.002.jpeg](./asset/inception_image.002.jpeg)
     
-- FastCGI는 프로세스들을 생성해두고, 한 프로세스당 여러개의 요청을 계속 처리함.
-- FastCGI가 메모리를 더 많이 소모하지만 더 빠름!
+- `FastCGI`는 프로세스들을 생성해두고, 한 프로세스당 여러개의 요청을 계속 처리함.
+- `FastCGI`가 메모리를 더 많이 소모하지만 더 빠름!
     
     ![inception_image.003.jpeg](./asset/inception_image.003.jpeg)
     
 
-php-fpm은 php에서 공식적으로 FastCGI를 지원하면서 만들어진것. (PHP Fastcgi Process Manager)
+`php-fpm`은 `php`에서 공식적으로 `FastCGI`를 지원하면서 만들어진것. (PHP Fastcgi Process Manager)
 
-Wordpress + php-fpm은 워드프레스를 php-fpm을 이용하여 FastCGI로 제공하는것!
+`Wordpress + php-fpm`은 워드프레스를 `php-fpm`을 이용하여 `FastCGI`로 제공하는것!
 
 [How the web works: HTTP and CGI explained](https://www.garshol.priv.no/download/text/http-tut.html)
 
@@ -390,13 +402,13 @@ server {
 
 ### php-fpm
 
-php-fpm은 php를 fcgi모드로 동작하게 해주며, 다양한 최적화가 되어있음
+`php-fpm`은 `php`를 `fcgi`모드로 동작하게 해주며, 다양한 최적화가 되어있음
 
 [상세정보](https://opentutorials.org/module/384/4332)
 
 ### Nginx fcgi
 
-nginx에는 fcgi을 위한 다양한 config 옵션을 지원함
+Nginx에는 `fcgi`을 위한 다양한 config 옵션을 지원함
 
 ```
 location ~ \\.php$ {
@@ -414,7 +426,7 @@ location ~ \\.php$ {
 
 ## Nginx proxy
 
-Nginx를 reverse proxy로 활용하기 위한 설정이며 특정 url의 포트로 보낼 뿐만 아니라 http 버젼, 헤더, 버퍼 등을 설정할 수 있음.
+Nginx를 `reverse proxy`로 활용하기 위한 설정이며 특정 url의 포트로 보낼 뿐만 아니라 http 버전, 헤더, 버퍼 등을 설정할 수 있음.
 
 ```
 location /backend {
@@ -451,7 +463,7 @@ command port를 위해선 통상적으로 21번 포트를 사용하지만 data p
 
 ## active mode
 
-active mode에서는 다음과 같이 진행됨
+`active mode`에서는 다음과 같이 진행됨
 
 1. 클라이언트에서 임의의 포트(N > 1023)를 FTP 서버의 21번 포트에 연결함. (command port)
 2. 클라이언트에서 data port로 쓸 N+1번 포트의 정보를 서버에게 넘겨줌.
@@ -463,13 +475,13 @@ active mode에서는 다음과 같이 진행됨
 
 ## passive mode
 
-active mode의 문제를 해결하기 위해 등장한 방법이 passive mode이며 PASV라고도 불림.
+`active mode`의 문제를 해결하기 위해 등장한 방법이 `passive mode`이며 `PASV`라고도 불림.
 
-passive mode FTP에서 클라이언트는 두 연결을 모두 시작하여 방화벽 문제를 해결함.
+`passive mode` FTP에서 클라이언트는 두 연결을 모두 시작하여 방화벽 문제를 해결함.
 
 1. FTP연결을 열 때 클라이언트는 두개의 랜덤 포트를 로컬에서 열음.(N>1023, N+1)
 2. 첫번째 포트는 서버의 21번 포트에 연결됨.(command port)
-3. 클라이언트가 psav 명령을 보내서 서버에서 랜덤 포트 P (p > 1023)을 열고 클라이언트에게 P를 알려줌.
+3. 클라이언트가 `PASV` 명령을 보내서 서버에서 랜덤 포트 P (p > 1023)을 열고 클라이언트에게 P를 알려줌.
 4. 클라이언트는 N+1에서 P로 연결함. (data port)
 
 ![inception_image.008.jpeg](./asset/inception_image.008.jpeg)
@@ -511,8 +523,8 @@ passive mode FTP에서 클라이언트는 두 연결을 모두 시작하여 방�
 
 ## ftp-server for linux
 
-리눅스의 ftp-server 프로그램으로 vsftp, pro-ftp, pure-ftp등 다양한 프로그램이 있는데, alpine linux와 호환이 잘되는 vsftp를 선택.
+리눅스의 `ftp-server` 프로그램으로 `vsftp`, `pro-ftp`, `pure-ftp`등 다양한 프로그램이 있는데, alpine linux와 호환이 잘되는 `vsftp`를 선택.
 
-ftp 특성상 로그인하여 접속하게 되므로 적절한 유저를 잘 생성해줘야 하고, 파일시스템에 접근하기 때문에 권한 설정도 잘 해줘야함. 외부에서 접근할 수 있는 디렉토리를 config파일에 정의해서 특정 디렉토리에만 접근하게 해주고, container로 관리하기 위해 로깅 및 background 설정 정도를 해주면 filezilla를 통해 손쉽게 접근 가능해짐.
+`ftp` 특성상 로그인하여 접속하게 되므로 적절한 유저를 잘 생성해줘야 하고, 파일시스템에 접근하기 때문에 권한 설정도 잘 해줘야함. 외부에서 접근할 수 있는 디렉토리를 config파일에 정의해서 특정 디렉토리에만 접근하게 해주고, container로 관리하기 위해 로깅 및 background 설정 정도를 해주면 `filezilla`를 통해 손쉽게 접근 가능해짐.
 
 [vsftpd config](https://2factor.tistory.com/96) 참조
