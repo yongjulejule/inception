@@ -22,7 +22,6 @@ COPY conf/vsftpd.conf /tmp/vsftpd.conf
 
 ENTRYPOINT [ "/sbin/tini", "--", "/tmp/entrypoint.sh" ]
 
-VOLUME [ "/var/www/ftp" ]
+VOLUME [ "/var/www/wordpress" ]
 
-# FIXME
 CMD [ "vsftpd", "/etc/vsftpd/vsftpd.conf" ]

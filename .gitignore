@@ -1,3 +1,4 @@
 .env
 *_from_container
 *.pem
+.DS_Store

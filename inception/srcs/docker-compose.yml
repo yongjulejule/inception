@@ -2,7 +2,7 @@ version: "3"
 
 services:
   cadvisor:
-    image: inception_cadvisor:v1
+    image: cadvisor:v1
 
     depends_on:
       - nginx
@@ -19,8 +19,6 @@ services:
     networks:
       inception_intra:
         ipv4_address: 172.10.0.47
-    expose:
-      - "8080"
     restart: "always"
 
     volumes:
@@ -34,7 +32,7 @@ services:
     privileged: true
 
   static:
-    image: inception_static:v1
+    image: static:v1
 
     depends_on:
       - nginx
@@ -46,14 +44,12 @@ services:
     networks:
       inception_intra:
         ipv4_address: 172.10.0.46
-    # ports:
-    #   - "8080:8080"
     expose:
       - "4242"
     restart: "always"
 
   adminer:
-    image: inception_adminer:v1
+    image: adminer:v1
 
     depends_on:
       - mariadb
@@ -70,7 +66,7 @@ services:
     restart: "always"
 
   ftp:
-    image: inception_ftp:v1
+    image: ftp:v1
 
     build:
       context: ./requirements/bonus/ftp
@@ -92,7 +88,7 @@ services:
       - "21:21"
 
   redis:
-    image: inception_redis:v1
+    image: redis:v1
 
     build:
       context: ./requirements/bonus/redis/
@@ -108,7 +104,7 @@ services:
     restart: "always"
 
   mariadb:
-    image: inception_mariadb:v1
+    image: mariadb:v1
 
     build:
       context: ./requirements/mariadb/
@@ -130,7 +126,7 @@ services:
     restart: "always"
 
   wordpress:
-    image: inception_wordpress:v1
+    image: wordpress:v1
     depends_on:
       - mariadb
       - redis
@@ -163,7 +159,7 @@ services:
     restart: "always"
 
   nginx:
-    image: inception_nginx:v1
+    image: nginx:v1
     depends_on:
       - wordpress
       - adminer

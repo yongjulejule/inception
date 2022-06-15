@@ -1,197 +1,452 @@
 <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Inception</title>
-        <style>
-/* From extension vscode.github */
-/*---------------------------------------------------------------------------------------------
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Inception</title>
+    <style>
+      /* From extension vscode.github */
+      /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.vscode-dark img[src$=\#gh-light-mode-only],
-.vscode-light img[src$=\#gh-dark-mode-only] {
-	display: none;
-}
+      .vscode-dark img[src$="\#gh-light-mode-only"],
+      .vscode-light img[src$="\#gh-dark-mode-only"] {
+        display: none;
+      }
 
-/*---------------------------------------------------------------------------------------------
+      /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css"
+      integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css"
+    />
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI",
+          system-ui, "Ubuntu", "Droid Sans", sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+    </style>
+    <style>
+      .task-list-item {
+        list-style-type: none;
+      }
+      .task-list-item-checkbox {
+        margin-left: -20px;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body class="vscode-body vscode-light">
+    <h1 id="inception">Inception</h1>
+    <p>아래와 같은 구조로 서비스들을 Docker container로 제공하는 프로젝트.</p>
+    <p>
+      <img src="./asset/inception.jpeg" alt="inception" />
+    </p>
+    <h1 id="table-of-contents">Table of Contents</h1>
+    <ul>
+      <li><a href="#inception">Inception</a></li>
+      <li><a href="#table-of-contents">Table of Contents</a></li>
+      <li>
+        <a href="#docker">Docker</a>
+        <ul>
+          <li>
+            <a href="#%EB%8F%84%EC%BB%A4%EB%9E%80-%EB%AD%98%EA%B9%8C"
+              >도커란 뭘까?</a
+            >
+          </li>
+          <li>
+            <a href="#docker-vs-virtual-machine">Docker vs Virtual Machine</a>
+          </li>
+          <li><a href="#docker-image">Docker image</a></li>
+          <li>
+            <a href="#docker-container">Docker container</a>
+            <ul>
+              <li><a href="#pid-1">pid 1</a></li>
+              <li><a href="#%EB%B3%BC%EB%A5%A8">볼륨</a></li>
+              <li>
+                <a href="#%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC">네트워크</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><a href="#docker-compose">Docker compose</a></li>
+      <li><a href="#docker-in-inception">Docker in Inception</a></li>
+      <li>
+        <a href="#mariadb">MariaDB</a>
+        <ul>
+          <li>
+            <a
+              href="#mariadb%EB%A5%BC-%EC%9C%84%ED%95%9C-%EB%8F%84%EC%BB%A4-%EC%9D%B4%EB%AF%B8%EC%A7%80"
+              >MariaDB를 위한 도커 이미지</a
+            >
+            <ul>
+              <li>
+                <a href="#mysqld_safe%EC%9D%98-%ED%95%A8%EC%A0%95"
+                  >mysqld_safe의 함정</a
+                >
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <a href="#wordpress--fastcgicommon-gateway-interface"
+          >Wordpress + fastCGI(Common Gateway Interface)</a
+        >
+        <ul>
+          <li>
+            <a
+              href="#wordpress%EB%A1%9C-%ED%95%98%EB%9D%BC%EB%8A%94-%EC%9D%B4%EC%9C%A0-%EC%95%84%EB%A7%88"
+              >Wordpress로 하라는 이유 (아마…)</a
+            >
+          </li>
+          <li>
+            <a href="#fastcgi">fastCGI</a>
+            <ul>
+              <li><a href="#cgi">CGI</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><a href="#nginx">Nginx</a></li>
+      <li>
+        <a href="#nginx-config">Nginx-config</a>
+        <ul>
+          <li><a href="#nginx-tls">Nginx TLS</a></li>
+          <li>
+            <a href="#nginx-fastcgi">Nginx fastCGI</a>
+            <ul>
+              <li><a href="#php-fpm">php-fpm</a></li>
+              <li><a href="#nginx-fcgi">Nginx fcgi</a></li>
+            </ul>
+          </li>
+          <li><a href="#nginx-proxy">Nginx proxy</a></li>
+        </ul>
+      </li>
+      <li><a href="#redis">Redis</a></li>
+      <li>
+        <a href="#ftp-file-transport-protocol">FTP (File Transport Protocol)</a>
+        <ul>
+          <li><a href="#active-mode">active mode</a></li>
+          <li><a href="#passive-mode">passive mode</a></li>
+          <li>
+            <a href="#ftp%EC%9D%98-%EC%9E%A5%EB%8B%A8%EC%A0%90">FTP의 장단점</a>
+            <ul>
+              <li><a href="#%EC%9E%A5%EC%A0%90">장점</a></li>
+              <li><a href="#%EB%8B%A8%EC%A0%90">단점</a></li>
+            </ul>
+          </li>
+          <li><a href="#ftp-vs-http">FTP vs HTTP</a></li>
+          <li><a href="#ftp-server-for-linux">ftp-server for linux</a></li>
+        </ul>
+      </li>
+    </ul>
+    <h1 id="docker">Docker</h1>
+    <h2 id="도커란-뭘까">도커란 뭘까?</h2>
+    <p>
+      도커는
+      <a href="https://en.wikipedia.org/wiki/OS-level_virtualization"
+        >OS-level</a
+      >
+      가상화를 통해 컨테이너를 쉽게 다루게 해주는 플랫폼임. 이미지 기반으로
+      컨테이너를 손쉽게 생성한다는 점으로, 어플리케이션마다 필요한 환경을 구축,
+      테스트, 배포하기 좋음!
+    </p>
+    <p>
+      컨테이너 기술은 그 전부터 존재했으며 도커는 이를 정말 잘 활용할 수 있도록
+      만들어졌을 뿐임.
+    </p>
+    <p>
+      <img
+        src="./asset/docker-architecture.jpeg"
+        alt="docker-architecture.jpeg"
+      />
+    </p>
+    <p>
+      이와 같이 다양한 기능을 제공하는데, client(shell or docker desktop
+      app)에서 명령을 하면 <code>Docker daemon</code>이 이미지와 컨테이너를
+      관리하고, 필요하면 Registry(주로 Docker hub)에서 이미지를 가져오기도 함.
+    </p>
+    <h2 id="docker-vs-virtual-machine">Docker vs Virtual Machine</h2>
+    <p>
+      도커와 가상머신은 독립된 환경을 제공한다는 점에서 유사하고, 직접
+      컨테이너를 사용하면 가상 머신과 큰 차이가 없어 보이지만 컨테이너가
+      가상머신보다 성능이 훨씬 좋다는 이점이 있음.
+    </p>
+    <p>
+      이런 차이는 환경을 구축하는 방식에서 비롯되는데, 가상 머신의 경우는 호스트
+      머신 위에 가상화나 반-가상화를 통하여 새로운 os를 구축하고, 그 위에서
+      작동하는 방식이지만 도커 컨테이너의 경우는 호스트 머신 위에서 리눅스
+      커널의 <code>namespace</code>, <code>cgroup</code> 기능을 통해 작동하기
+      때문에 훨씬 가볍고 성능이 좋음.
+      <a href="#docker-container">docker container 참고</a>
+    </p>
+    <p>
+      또한 도커 컨테이너를 생성하기 위해 만드는 이미지 파일도 레이어로 분할되어
+      생성되기 때문에 변경점이 있다면 그 레이어만 업데이트하고, 나머지는
+      캐시되어 있는 데이터를 활용할 수 있기 때문에 이미지 생성 시간이 단축됨.
+      <a href="#docker-image">docker image</a> 참고
+    </p>
+    <p>
+      <img
+        src="./asset/Docker-containerized-and-vm-transparent-bg.jpg"
+        alt="Docker-containerized-and-vm-transparent-bg.jpg"
+      />
+    </p>
+    <p>
+      하지만 단점도 존재하는데, process-level의 격리이기 때문에, 상대적으로
+      보안이 좋지 않음.
+    </p>
+    <h2 id="docker-image">Docker image</h2>
+    <p>
+      도커 이미지는 <code>Dockerfile</code>의 instruction들을 기반으로
+      만들어지며 컨테이너를 생성하기 위한 snapshot 역할을 함.
+    </p>
+    <p>
+      이때 각 instruction에 따라 layer된 이미지를 생성하는데, 그 구조는 아래와
+      같음.
+    </p>
+    <p>
+      <img
+        src="./asset/docker-container-layers.jpg"
+        alt="docker-container-layers.jpg"
+      />
+    </p>
+    <p>
+      각 layer는 READ-ONLY이며 union file system를 통하여 최상위 layer에서
+      일관성 있는 파일 구조를 확인할 수 있게 됨.
+    </p>
+    <p>
+      이렇게 layer화된 구조를 가져서, 특정 instruction이 변경되면 모든 이미지를
+      다시 빌드하는게 아니라, 변경점이 있는 layer부터 빌드할 수 있고, 이전
+      layer는 cache를 이용하여 빠르게 빌드할 수 있음
+    </p>
+    <details>
+      <summary>시간 비교</summary>
+      <p>다음과 같은 <code>Dockerfile</code>을 가지고 이미지를 빌드해보자.</p>
+      <pre><code class="language-Dockerfile"><div><span class="hljs-keyword">FROM</span> alpine:<span class="hljs-number">3.14</span>
 
-</style>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
-<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
-<style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-        </style>
-        <style>
-.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
-</style>
-        
-    </head>
-    <body class="vscode-body vscode-light">
-        <h1 id="inception">Inception</h1>
-<ul>
-<li><a href="#inception">Inception</a></li>
-<li><a href="#docker">Docker</a>
-<ul>
-<li><a href="#%EB%8F%84%EC%BB%A4%EB%9E%80-%EB%AD%98%EA%B9%8C">도커란 뭘까?</a></li>
-<li><a href="#docker-vs-virtual-machine">Docker vs Virtual Machine</a></li>
-<li><a href="#docker-image">Docker image</a></li>
-<li><a href="#docker-container">Docker container</a>
-<ul>
-<li><a href="#pid-1">pid 1</a></li>
-<li><a href="#%EB%B3%BC%EB%A5%A8">볼륨</a></li>
-<li><a href="#%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC">네트워크</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#docker-compose">Docker compose</a></li>
-<li><a href="#docker-in-inception">Docker in Inception</a></li>
-<li><a href="#mariadb">MariaDB</a>
-<ul>
-<li><a href="#mariadb%EB%A5%BC-%EC%9C%84%ED%95%9C-%EB%8F%84%EC%BB%A4-%EC%9D%B4%EB%AF%B8%EC%A7%80">MariaDB를 위한 도커 이미지</a>
-<ul>
-<li><a href="#mysqld_safe%EC%9D%98-%ED%95%A8%EC%A0%95">mysqld_safe의 함정</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#wordpress--fastcgicommon-gateway-interface">Wordpress + fastCGI(Common Gateway Interface)</a>
-<ul>
-<li><a href="#wordpress%EB%A1%9C-%ED%95%98%EB%9D%BC%EB%8A%94-%EC%9D%B4%EC%9C%A0-%EC%95%84%EB%A7%88">Wordpress로 하라는 이유 (아마…)</a></li>
-<li><a href="#fastcgi">fastCGI</a>
-<ul>
-<li><a href="#cgi">CGI</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#nginx">Nginx</a></li>
-<li><a href="#nginx-config">Nginx-config</a>
-<ul>
-<li><a href="#nginx-tls">Nginx TLS</a></li>
-<li><a href="#nginx-fastcgi">Nginx fastCGI</a>
-<ul>
-<li><a href="#php-fpm">php-fpm</a></li>
-<li><a href="#nginx-fcgi">Nginx fcgi</a></li>
-</ul>
-</li>
-<li><a href="#nginx-proxy">Nginx proxy</a></li>
-</ul>
-</li>
-<li><a href="#redis">Redis</a></li>
-<li><a href="#ftp-file-transport-protocol">FTP (File Transport Protocol)</a>
-<ul>
-<li><a href="#active-mode">active mode</a></li>
-<li><a href="#passive-mode">passive mode</a></li>
-<li><a href="#ftp%EC%9D%98-%EC%9E%A5%EB%8B%A8%EC%A0%90">FTP의 장단점</a>
-<ul>
-<li><a href="#%EC%9E%A5%EC%A0%90">장점</a></li>
-<li><a href="#%EB%8B%A8%EC%A0%90">단점</a></li>
-</ul>
-</li>
-<li><a href="#ftp-vs-http">FTP vs HTTP</a></li>
-<li><a href="#ftp-server-for-linux">ftp-server for linux</a></li>
-</ul>
-</li>
-</ul>
-<p><img src="./asset/Screen_Shot_2022-06-06_at_2.29.28_PM.png" alt="Screen Shot 2022-06-06 at 2.29.28 PM.png"></p>
-<h1 id="docker">Docker</h1>
-<h2 id="도커란-뭘까">도커란 뭘까?</h2>
-<p>도커는 OS-level 가상화를 통해 컨테이너를 쉽게 다루게 해주는 플랫폼임. 이미지 기반으로 컨테이너를 손쉽게 생성한다는 점으로, 어플리케이션마다 필요한 환경을 구축, 테스트, 배포하기 좋음!</p>
-<p>컨테이너 기술은 그 전부터 존재했으며 도커는 이를 정말 잘 활용할 수 있도록 만들어졌을 뿐임.</p>
-<p><img src="./asset/docker-architecture.jpeg" alt="docker-architecture.jpeg"></p>
-<p>이와 같이 다양한 기능을 제공하는데, client(shell or docker desktop app)에서 명령을 하면 Docker daemon이 이미지와 컨테이너를 관리하고, 필요하면 Registry(주로 Docker hub)에서 이미지를 가져오기도 함.</p>
-<h2 id="docker-vs-virtual-machine">Docker vs Virtual Machine</h2>
-<p>도커와 가상머신은 독립된 환경을 제공한다는 점에서 유사하고, 직접 컨테이너를 사용하면 vm과 큰 차이가 없어 보이지만 컨테이너가 가상머신보다 성능이 훨씬 좋다는 이점이 있음.</p>
-<p>이런 차이는 환경을 구축하는 방식에서 비롯되는데, VM의 경우는 호스트 머신 위에 가상화나 반-가상화를 통하여 새로운 os를 구축하고, 그 위에서 작동하는 방식이지만 도커 컨테이너의 경우는 호스트 머신 위에서 리눅스 커널의 namespace, cgroup 기능을 통해 작동하기 때문에 훨씬 가볍고 성능이 좋음. docker container 참고</p>
-<p>또한 도커 컨테이너를 생성하기 위해 만드는 이미지 파일도 레이어로 분할되어 생성되기 때문에 변경점이 있다면 그 레이어만 업데이트하고, 나머지는 캐시되어 있는 데이터를 활용할 수 있기 때문에 이미지 생성 시간이 단축됨. docker image 참고</p>
-<p><img src="./asset/Docker-containerized-and-vm-transparent-bg.jpg" alt="Docker-containerized-and-vm-transparent-bg.jpg"></p>
-<p>하지만 단점도 존재하는데, process-level의 격리이기 때문에, 상대적으로 보안이 좋지 않음.</p>
-<h2 id="docker-image">Docker image</h2>
-<p>도커 이미지는 <code>Dockerfile</code>의 instruction들을 기반으로 만들어지며 컨테이너를 생성하기 위한 snapshot 역할을 함.</p>
-<p>이때 각 instruction에 따라 layer된 이미지를 생성하는데, 그 구조는 아래와 같음.</p>
-<p><img src="./asset/docker-container-layers.jpg" alt="docker-container-layers.jpg"></p>
-<p>각 layer는 READ-ONLY이며 union file system를 통하여 최상위 layer에서 일관성 있는 파일 구조를 확인할 수 있게 됨.</p>
-<p>이렇게 layer화된 구조를 가져서, 특정 instruction이 변경되면 모든 이미지를 다시 빌드하는게 아니라, 변경점이 있는 layer부터 빌드할 수 있고, 이전 layer는 cache를 이용하여 빠르게 빌드할 수 있음</p>
-<ul>
-<li>
-<p>시간 비교</p>
-<p><em>첫 빌드</em></p>
-<p><img src="./asset/docker-image-build-1.png" alt="docker-image-build-1.png"></p>
-<p><em>같은 이미지를 다시 빌드했을 때</em></p>
-<p><img src="./asset/docker-image-build-2.png" alt="docker-image-build-2.png"></p>
-<p><em>layer 2를 변경했을 때</em></p>
-<p><img src="./asset/docker-image-build-3.png" alt="docker-image-build-3.png"></p>
-<p><code>time</code> 명령어를 이용하면 확연한 시간 차이를 볼 수 있음.</p>
-</li>
-</ul>
-<p>이렇게 READ-ONLY로 만들어진 이미지 위에 R/W인 Container layer를 올리고, 이 layer에서 작업하기 때문에 컨테이너에서 파일을 생성하거나 삭제해도 image layer에는 영향이 없음.</p>
-<p>이러한 특징 때문에 이미지는 불변성을 지니고 빠른 빌드타임을 가질 수 있으며 원격 저장소에서 이미지를 pull 받을때 역시 이렇게 중복된 layer를 제외하고 받기 때문에 빠른 속도를 보임.</p>
-<p>만약, 컨테이너의 작업 사항을 이미지로 저장하고 싶다면 <code>docker commit</code> 명령어를 통해 컨테이너 layer를 이미지로 통합할 수 있음.</p>
-<h2 id="docker-container">Docker container</h2>
-<p>컨테이너는 이미지를 통해 생성되는 instance로, 독립된 환경을 제공해주는 프로세스임. <a href="https://www.notion.so/docker/docker-image.html">docker image</a>에서 기술한 것 처럼, 이미지 위에 R/W layer를 올린 형태이며, 컨테이너가 삭제되면 작업 내역도 모두 사라짐.</p>
-<p>하나의 빈 레이어만 생성하면 되기 때문에 매우 빠르게 생성할 수 있음!</p>
-<p><img src="./asset/docker-container-layer.jpg" alt="docker-container-layer.jpg"></p>
-<blockquote>
-<p>출처 : docker 공식문서</p>
-</blockquote>
-<p>각 컨테이너는 완전히 새로운 환경을 생성한 것 처럼 작동하며 root 디렉토리, pid, 네트워크, 메모리, cpu등을 새롭게 구성할 수 있음.</p>
-<p>이는 리눅스 커널의 <a href="https://www.notion.so/linux/namespace.html">namespace와 cgroup</a>라는 기능으로 구현됨!</p>
-<p>결국, vm과 다르게 컨테이너는 Host os에서 native로 작동하기 때문에 훨씬 가볍고 빠름.(리눅스가 아닌 환경에서는 docker app이 리눅스 환경으로 가상화를 하여 작동함.)</p>
-<p><img src="./asset/linux-namespace-comp2.png" alt="linux-namespace-comp2.png"></p>
-<blockquote>
-<p>컨테이너 프로세스와 init 프로세스의 namespace 비교</p>
-</blockquote>
-<p>TODO: 컨테이너 프로세스의 pid 여러개 찍히는거 보여주는 이미지 넣기</p>
-<h3 id="pid-1">pid 1</h3>
-<p>컨테이너는 독립된 pid namespace에서 실행되기 때문에 내부에서 pid 1을 갖게 되는데, 리눅스의 pid 1은 특별한 작동을 하기 때문에 이를 고려해야함.</p>
-<ul>
-<li>PID 1은 Linux에서 특별한 의미를 지님. <code>init</code> process라고 알려져 있으며 고아나 좀비 프로세스를 적절히 핸들링 해줄 필요가 있음. 또한 PID 1에 시그널 핸들러가 없으면 <code>SIGTERM</code>은 아무것도 하지 않음.</li>
-<li>일반적으론 환경에선 PID 1에 적절한 <code>init</code> 프로세스가 할당되지만, 도커에선 <code>&lt;executable&gt;</code>이 바로 PID 1로 실행됨.</li>
-<li>또한 도커를 중단시키는 <code>docker stop</code> 명령어는 <code>SIGTERM</code> 을 보내서 컨테이너를 중단시키는데, 만약 10초간 컨테이너가 중단되지 않으면 <code>SIGKILL</code> 명령어로 프로세스를 예상치 못하게 종료시키며, 문제가 발생할 수 있음!</li>
-<li>Docker에서 <a href="https://github.com/krallin/tini">tini</a>라는 적절한 initialization process(<code>SIGTERM</code> 시그널 핸들링이 잘 되어 있는 프로그램, <code>SIGTERM</code>을 받으면 자식 프로세스들에게 보내고, 최종적으로 자기 자신도 종료되는 방식으로 작동)를 <code>-init</code>플레그를 통하여 지원하기 때문에 이를 사용하거나, <a href="https://github.com/Yelp/dumb-init">dump-init</a>, <a href="https://github.com/phusion/baseimage-docker">baseimage-docker</a>같은 프로그램을 사용하여 시작하는것을 추천. (모두 리눅스의 PID 1 역할을 해주는 경량화된 프로그램)</li>
-</ul>
-<h3 id="볼륨">볼륨</h3>
-<p>컨테이너 생성시 로컬에 있는 특정 디렉토리를 컨테이너에 마운트 할 수 있으며 (bind mount), 도커로 볼륨을 생성하여 마운트(volume mount) 할 수도 있다.</p>
-<ul>
-<li>volume mount
-<ul>
-<li>도커의 파일시스템을 사용하여 컨테이너들에서 접근할때 효율적임</li>
-<li>도커에 의해 관리되어 호스트 시스템의 핵심 기능들과 분리되어 있음</li>
-<li>리눅스가 아닌 환경에선 결국 가상화를 통하여 도커가 구동되는데, 이때 가상화된 volume을 마운트하는게 훨씬 성능이 좋음</li>
-</ul>
-</li>
-<li>bind mount
-<ul>
-<li>호스트 os와 파일 시스템을 완전히 공유해서 사용하기 편함</li>
-<li>도커 내부에서 호스트의 파일을 건드리기 때문에 보안상 좋지 않음.</li>
-</ul>
-</li>
-</ul>
-<p>Docker 공식 문서는 volume 마운트를 사용하길 강력이 추천하지만 서브젝트 내용상 bind mount처럼 사용하게 됨…</p>
-<h3 id="네트워크">네트워크</h3>
-<p>컨테이너 생성시 가상 네트워크를 컨테이너에 할당할 수 있으며 컨테이너끼리 통신하기 위해 같은 네트워크로 여러개의 컨테이너를 구성할  수 있다. 네트워크 namespace로 호스트와 격리되며 다양한 방식으로 네트워크를 구성할 수 있음. <a href="https://docs.docker.com/network/#network-drivers">공식문서</a></p>
-<h1 id="docker-compose">Docker compose</h1>
-<p>도커 컴포즈는 docker app의 서비스, 네트워크, 볼륨을 정의하는 yaml 파일임. 컨테이너를 실행하기 위해 volume, network, environment 등 다양한 옵션을 통해 <code>run</code> 을 하게 되는데, 이런 복잡한 명령어를 파일에 정의하여 자동으로 컨테이너들을 실행시켜줌.</p>
-<p>따로 설치해야함. Docker desktop에서는 자동으로 설치됨.</p>
-<p>또한 필요하다면 이미지를 빌드해주고, 변경사항이 있다면 그 컨테이너만 다시 실행시켜 주며, <code>.env</code> 로 환경변수를 설정하고 <code>depends_on</code> 을 통해 의존성있는 컨테이너들의 빌드 순서를 정해줄 수 있음!</p>
-<p><a href="https://docs.docker.com/compose/compose-file/">도커 컴포즈 공식문서 참고</a></p>
-<h1 id="docker-in-inception">Docker in Inception</h1>
-<p>일반적으론 docker hub에 official image들로 mariadb, nginx, wordpress-phpfpm 등 다양한 컨테이너들을 손쉽게 구동할 수 있지만 alpine이나 debian의 베이스 이미지에서 서비스를 위한 Dockerfile을 직접 작성해야함.</p>
-<p>alpine 리눅스는 굉장히 경량화된 리눅스로 가벼운게 이점인 컨테이너의 특성 때문에 docker image의 베이스로 상당히 많이 쓰이기 때문에 alpline linux로 base를 잡음.</p>
-<p>Dockerfile은 다음과 workflow로 작성함</p>
-<pre><code class="language-docker"><div><span class="hljs-keyword">FROM</span> alpine:<span class="hljs-number">3.14</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;here is layer 1&quot;</span></span>
+<span class="hljs-keyword">RUN</span><span class="bash"> <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;here is layer 2&quot;</span></span>
+<span class="hljs-keyword">RUN</span><span class="bash"> <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;here is layer 3&quot;</span></span>
+
+<span class="hljs-keyword">ENTRYPOINT</span><span class="bash"> [ <span class="hljs-string">&quot;/bin/sh&quot;</span> ]</span>
+</div></code></pre>
+      <p><em>첫 빌드</em></p>
+      <p>
+        <img
+          src="./asset/docker-image-build-1.png"
+          alt="docker-image-build-1.png"
+        />
+      </p>
+      <p><em>같은 이미지를 다시 빌드했을 때</em></p>
+      <p>
+        <img
+          src="./asset/docker-image-build-2.png"
+          alt="docker-image-build-2.png"
+        />
+      </p>
+      <p><em>layer 2를 변경했을 때</em></p>
+      <p>
+        <img
+          src="./asset/docker-image-build-3.png"
+          alt="docker-image-build-3.png"
+        />
+      </p>
+      <p><code>time</code> 명령어를 이용하면 확연한 시간 차이를 볼 수 있음.</p>
+    </details>
+    <p>
+      이렇게 READ-ONLY로 만들어진 이미지 위에 R/W인 Container layer를 올리고, 이
+      layer에서 작업하기 때문에 컨테이너에서 파일을 생성하거나 삭제해도 image
+      layer에는 영향이 없음.
+    </p>
+    <p>
+      이러한 특징 때문에 이미지는 불변성을 지니고 빠른 빌드타임을 가질 수 있으며
+      원격 저장소에서 이미지를 pull 받을때 역시 이렇게 중복된 layer를 제외하고
+      받기 때문에 빠른 속도를 보임.
+    </p>
+    <p>
+      만약, 컨테이너의 작업 사항을 이미지로 저장하고 싶다면
+      <code>docker commit</code> 명령어를 통해 컨테이너 layer를 이미지로 통합할
+      수 있음.
+    </p>
+    <h2 id="docker-container">Docker container</h2>
+    <p>
+      컨테이너는 이미지를 통해 생성되는 instance로, 독립된 환경을 제공해주는
+      프로세스임. <a href="#docker-image">docker image</a>에서 기술한 것 처럼,
+      이미지 위에 R/W layer를 올린 형태이며, 컨테이너가 삭제되면 작업 내역도
+      모두 사라짐.
+    </p>
+    <p>하나의 빈 레이어만 생성하면 되기 때문에 매우 빠르게 생성할 수 있음!</p>
+    <p>
+      <img
+        src="./asset/docker-container-layer.jpg"
+        alt="docker-container-layer.jpg"
+      />
+    </p>
+    <blockquote>
+      <p>출처 : docker 공식문서</p>
+    </blockquote>
+    <p>
+      각 컨테이너는 완전히 새로운 환경을 생성한 것 처럼 작동하며 root 디렉토리,
+      pid, 네트워크, 메모리, cpu등을 새롭게 구성할 수 있음.
+    </p>
+    <p>
+      이는 리눅스 커널의
+      <a
+        href="https://github.com/yongjulejule/TIL/blob/main/linux/namespace.html"
+        >namespace와 cgroup</a
+      >라는 기능으로 구현됨!
+    </p>
+    <p>
+      결국, vm과 다르게 컨테이너는 Host os에서 native로 작동하기 때문에 훨씬
+      가볍고 빠름.(리눅스가 아닌 환경에서는 docker app이 리눅스 환경으로
+      가상화를 하여 작동함.)
+    </p>
+    <p>
+      <img
+        src="./asset/linux-namespace-comp2.png"
+        alt="linux-namespace-comp2.png"
+      />
+    </p>
+    <blockquote>
+      <p>컨테이너 프로세스와 init 프로세스의 namespace 비교</p>
+    </blockquote>
+    <p>TODO: 컨테이너 프로세스의 pid 여러개 찍히는거 보여주는 이미지 넣기</p>
+    <h3 id="pid-1">pid 1</h3>
+    <p>
+      컨테이너는 독립된 pid namespace에서 실행되기 때문에 내부에서 pid 1을 갖게
+      되는데, 리눅스의 pid 1은 특별한 작동을 하기 때문에 이를 고려해야함.
+    </p>
+    <ul>
+      <li>
+        PID 1은 Linux에서 특별한 의미를 지님. <code>init</code> process라고
+        알려져 있으며 고아나 좀비 프로세스를 적절히 핸들링 해줄 필요가 있음.
+        또한 PID 1에 시그널 핸들러가 없으면 <code>SIGTERM</code>은 아무것도 하지
+        않음.
+      </li>
+      <li>
+        일반적으론 환경에선 PID 1에 적절한 <code>init</code> 프로세스가
+        할당되지만, 도커에선 <code>&lt;executable&gt;</code>이 바로 PID 1로
+        실행됨.
+      </li>
+      <li>
+        또한 도커를 중단시키는 <code>docker stop</code> 명령어는
+        <code>SIGTERM</code> 을 보내서 컨테이너를 중단시키는데, 만약 10초간
+        컨테이너가 중단되지 않으면 <code>SIGKILL</code> 명령어로 프로세스를
+        예상치 못하게 종료시키며, 문제가 발생할 수 있음!
+      </li>
+      <li>
+        Docker에서 <a href="https://github.com/krallin/tini">tini</a>라는 적절한
+        initialization process(<code>SIGTERM</code> 시그널 핸들링이 잘 되어 있는
+        프로그램, <code>SIGTERM</code>을 받으면 자식 프로세스들에게 보내고,
+        최종적으로 자기 자신도 종료되는 방식으로 작동)를
+        <code>-init</code>플레그를 통하여 지원하기 때문에 이를 사용하거나,
+        <a href="https://github.com/Yelp/dumb-init">dump-init</a>,
+        <a href="https://github.com/phusion/baseimage-docker"
+          >baseimage-docker</a
+        >같은 프로그램을 사용하여 시작하는것을 추천. (모두 리눅스의 PID 1 역할을
+        해주는 경량화된 프로그램)
+      </li>
+    </ul>
+    <h3 id="볼륨">볼륨</h3>
+    <p>
+      컨테이너 생성시 로컬에 있는 특정 디렉토리를 컨테이너에 마운트 할 수 있으며
+      (bind mount), 도커로 볼륨을 생성하여 마운트(volume mount) 할 수도 있다.
+    </p>
+    <ul>
+      <li>
+        volume mount
+        <ul>
+          <li>도커의 파일시스템을 사용하여 컨테이너들에서 접근할때 효율적임</li>
+          <li>
+            도커에 의해 관리되어 호스트 시스템의 핵심 기능들과 분리되어 있음
+          </li>
+          <li>
+            리눅스가 아닌 환경에선 결국 가상화를 통하여 도커가 구동되는데, 이때
+            가상화된 volume을 마운트하는게 훨씬 성능이 좋음
+          </li>
+        </ul>
+      </li>
+      <li>
+        bind mount
+        <ul>
+          <li>호스트 os와 파일 시스템을 완전히 공유해서 사용하기 편함</li>
+          <li>
+            도커 내부에서 호스트의 파일을 건드리기 때문에 보안상 좋지 않음.
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <p>
+      Docker 공식 문서는 volume 마운트를 사용하길 강력이 추천하지만 서브젝트
+      내용상 bind mount처럼 사용하게 됨…
+    </p>
+    <h3 id="네트워크">네트워크</h3>
+    <p>
+      컨테이너 생성시 가상 네트워크를 컨테이너에 할당할 수 있으며 컨테이너끼리
+      통신하기 위해 같은 네트워크로 여러개의 컨테이너를 구성할 수 있다. 네트워크
+      namespace로 호스트와 격리되며 다양한 방식으로 네트워크를 구성할 수 있음.
+      <a href="https://docs.docker.com/network/#network-drivers">공식문서</a>
+    </p>
+    <h1 id="docker-compose">Docker compose</h1>
+    <p>
+      도커 컴포즈는 docker app의 서비스, 네트워크, 볼륨을 정의하는 yaml 파일임.
+      컨테이너를 실행하기 위해 volume, network, environment 등 다양한 옵션을
+      통해 <code>run</code> 을 하게 되는데, 이런 복잡한 명령어를 파일에 정의하여
+      자동으로 컨테이너들을 실행시켜줌.
+    </p>
+    <p>
+      Linux의 경우 Docker를 설치 하였더라도 따로 설치해야함. Mac이나 Windows
+      환경에서 사용하는 Docker desktop App에서는 자동으로 설치됨.
+    </p>
+    <p>
+      또한 필요하다면 이미지를 빌드해주고, 변경사항이 있다면 그 컨테이너만 다시
+      실행시켜 주며, <code>.env</code> 로 환경변수를 설정하고
+      <code>depends_on</code> 을 통해 의존성있는 컨테이너들의 빌드 순서를 정해줄
+      수 있음!
+    </p>
+    <p>
+      <a href="https://docs.docker.com/compose/compose-file/"
+        >도커 컴포즈 공식문서 참고</a
+      >
+    </p>
+    <h1 id="docker-in-inception">Docker in Inception</h1>
+    <p>
+      일반적으론 docker hub에 official image들로 <code>mariadb</code>,
+      <code>nginx</code>, <code>wordpress php-fpm</code> 등 다양한 컨테이너들을
+      손쉽게 구동할 수 있지만 <code>alpine</code>이나 <code>debian</code>의
+      베이스 이미지에서 서비스를 위한 <code>Dockerfile</code>을 직접 작성해야함.
+    </p>
+    <p>
+      <code>alpine</code> 리눅스는 굉장히 경량화된 리눅스로 가벼운게 이점인
+      컨테이너의 특성 때문에 docker image의 베이스로 상당히 많이 쓰이기 때문에
+      alpine linux로 base를 잡음.
+    </p>
+    <p>Dockerfile은 다음과 workflow로 작성함</p>
+    <pre><code class="language-dockerfile"><div><span class="hljs-keyword">FROM</span> alpine:<span class="hljs-number">3.14</span>
 
 <span class="hljs-keyword">RUN</span><span class="bash"> apk update &amp;&amp; apk add tini;</span>
 
@@ -207,124 +462,356 @@
 
 <span class="hljs-keyword">VOLUME</span><span class="bash"> [마운트 포인트]</span>
 </div></code></pre>
-<p>필요한 패키지를 다운로드 받는 과정은 주로 Dockerfile의 RUN 커맨드를 활용하여 image cache를 활용하기 쉽게 구성하였고, 해당 컨테이너에서 서비스를 가동하기 위한 작업은 <code>entrypoint.sh</code> 에서 쉘 스크립트를 이용하여 작성함.</p>
-<h1 id="mariadb">MariaDB</h1>
-<p><code>MariaDB</code>는 <code>RDBMS</code>(관계형 데이터베이스)로 <code>MySQL</code>에서 떨어져 나온 거임. <code>MySQL</code>이 <code>Oracle</code>에 인수되면서 상업적 이용을 위해선 비용을 지불해야 했고, 이를 맘에 안들게 여긴 <code>MySQL</code>의 핵심 창업자 Monty씨가 나와 동료들과 <code>MySQL</code>의 코드 베이스를 이용하여 만든게 <code>MariaDB</code>(5.5버전 기준으로 포크해서 만들음). <code>MariaDB</code>는 현재도 오픈소스로 유지되고 있음. <a href="https://db-engines.com/en/ranking">디비 랭킹 사이트</a></p>
-<p><code>MySQL</code>과 완벽한 호환성을 위하여 <code>MySQL</code> 관련 바이너리를 실행해도 <code>MariaDB</code>가 돌아가게 할 수 있음.</p>
-<p>분리된 시점이 어느정도 지난 만큼 내부 구조나 성능에 차이가 있긴 함! (<a href="https://www.guru99.com/mariadb-vs-mysql.html#:~:text=MariaDB%20has%2012%20new%20storage,in%20MySQL%2C%20replication%20is%20slower.">MariaDB vs mysql</a>)</p>
-<h2 id="mariadb를-위한-도커-이미지">MariaDB를 위한 도커 이미지</h2>
-<p><code>MariaDB</code>를 로컬에서 직접 설정하려면 <code>config</code> 작성, <code>DB init</code>, <code>systemctl</code> 같은 도구들을 활용하여 하나하나 설정하면 되지만, 도커 이미지를 만들어서 컨테이너로 사용하려면 이 모든 작업이 자동으로 이루어져 유저가 바로 사용할 수 있어야 하고, 최대한 경량화 하는게 좋음.</p>
-<p><code>Alpine Linux</code>를 사용하기 때문에 <code>systemctl</code>같은 <code>Mariadb Daemon</code>을 다루는 도구가 없고, <code>alpine</code>에서 <code>openRC</code>라는 패키지가 <code>systemctl</code>을 대체하는데 도커 <code>base</code> 이미지로 받아오는 <code>alpine linux</code> 이미지에는 이 패키지도 안깔려있음. 따라서 직접 <code>mysqld(mariadbd)</code>를 이용하여 서버를 열어야 함!</p>
-<p><code>Dockerfile instruction</code> 을 이용하여 필요한 <code>MariaDB</code> 패키지를 다운받고, 쉘 스크립트에서 초기 DB install을 진행함. 이때 컨테이너 특성상 원격으로 DB에 접근하게 될텐데, root 유저로 원격에서 접근하는 것은 보안상 문제가 있으므로 이 단계에서 유저와 DB를 만들고 적절한 권한을 줘아함.</p>
-<h3 id="mysqld_safe의-함정">mysqld_safe의 함정</h3>
-<p><code>Mariadb</code> 공식 문서에서 <code>Mariadb daemon</code>을 가동시키는 방법으로 <code>mysqld_safe(mariadbd_safe)</code>을 사용하길 추천하는데, <code>mysqld_safe</code>는 자식 프로세스로 <code>mariadbd</code>를 실행하고, 해당 프로세스를 관리해주는 역할을 함. 이때 <code>SIGTERM</code>이나 <code>SIGQUIT</code>같은 시그널을 받으면 자식인 <code>mariadbd</code>에 넘겨서 잘 종료되게 한 뒤 재시작을 시켜버림.</p>
-<p><code>Docker</code>로 <code>MariaDB container</code>를 관리하는 입장에서는, 서비스를 종료하고 싶을때 <code>signal</code>을 보내도 계속 살아나니 결국 <code>SIGKILL</code>으로 <code>MariaDB container</code> 를 강제종료 시켜서 이는 예상치 못한 문제를 낳을 수 있음! 따라서 <code>mariadbd</code>로 실행을 해야함.</p>
-<h1 id="wordpress--fastcgicommon-gateway-interface">Wordpress + fastCGI(Common Gateway Interface)</h1>
-<p>워드프레스는 오픈소스 웹 사이트 제작 도구로 전 세계 웹사이트 시장 점유율 1위를 차지하고 있는 서비스임. 백악관 홈페이지 부터 이노아카 블로그까지 정말 많이 사용됨…!</p>
-<p>하지만 이런 오픈소스의 이점을 살리려면 프로그래밍 언어에 익숙해야 하고 영어에 언어 장벽이 없어야 해서 한국에선 자주 쓰이지 않음</p>
-<h2 id="wordpress로-하라는-이유-아마">Wordpress로 하라는 이유 (아마…)</h2>
-<p>LAMP(Linux + Apache + MySQL + PHP) 스택 이라는 가장 널리 사용되는 웹 앱에 대한 소프트웨어 스택이 있음. 모두 오픈소스 소프트웨어로 상용 패키지를 대체할 수 있음을 소개하기 위해 1998년에 나온 용어이며 워드프레스 같은 웹 프레임워크를 호스팅 하기에 충분한 최초의 오픈소스 소프트웨어 스택 중 하나여서 이 용어와 개념이 인기를 얻음.</p>
-<p><img src="./asset/Untitled.png" alt="Untitled"></p>
-<blockquote>
-<p>출처 : <a href="https://en.wikipedia.org/wiki/LAMP_(software_bundle)">https://en.wikipedia.org/wiki/LAMP_(software_bundle)</a></p>
-</blockquote>
-<p>요즘은 LAMP 스택에서 파생된 LEMP 스택 (apache 대신 nginx), WAMP 스택 (linux 대신 windows), MEAN(MongoDB + Express + Angular.js + Node.js) 등 많은 용어가 나왔지만 구성은 LAMP 스택과 비슷함.</p>
-<p>Wordpress는 호스팅 서버가 따로 필요하고, DB와 연결되어 작동하기 때문에 이 LAMP 스택을 활용하기에 정말 좋은 도구임</p>
-<h2 id="fastcgi">fastCGI</h2>
-<h3 id="cgi">CGI</h3>
-<ul>
-<li>
-<p>Common Gateway Interfaced의 약자. html만 제공하다가 외부 앱과 상호작용을 할 필요성을 느껴서 나온 동적 페이지를 제공하기 위한 규격화된 약속. 웹서버와 서로 데이터를 주고받는 방식으로 작동함!</p>
-</li>
-<li>
-<p>어떤 언어로든 작성될 수 있으며 url에 <code>&lt;protocol&gt;://&lt;domain&gt;/(cgi-bin/&lt;cgi_program_name&gt;|&lt;program&gt;.cgi)</code> 방식을 주로 씀. 만약 URL에 query string이 있으면 환경변수로 QUERY_STRING이 설정되어 cgi 프로그램에서 사용할 수 있음.</p>
-</li>
-<li>
-<p><code>CGI</code> 프로그램이 요청된 작업을 수행하고 <code>html</code>문서 형태로 <code>stdout</code>으로 쏴주면, 서버가 받아서 <code>html</code> 문서를 유저에게 쏴주는 방식.</p>
-<p><img src="./asset/inception_image.001.jpeg" alt="inception_image.001.jpeg"></p>
-</li>
-<li>
-<p>하지만 1 요청당 1 프로세스를 생성하고, 요청이 끝나면 프로세스가 종료되는 방식이라서 성능이 구림</p>
-<p><img src="./asset/inception_image.002.jpeg" alt="inception_image.002.jpeg"></p>
-</li>
-<li>
-<p>FastCGI는 프로세스들을 생성해두고, 한 프로세스당 여러개의 요청을 계속 처리함.</p>
-</li>
-<li>
-<p>FastCGI가 메모리를 더 많이 소모하지만 더 빠름!</p>
-<p><img src="./asset/inception_image.003.jpeg" alt="inception_image.003.jpeg"></p>
-</li>
-</ul>
-<p>php-fpm은 php에서 공식적으로 FastCGI를 지원하면서 만들어진것. (PHP Fastcgi Process Manager)</p>
-<p>Wordpress + php-fpm은 워드프레스를 php-fpm을 이용하여 FastCGI로 제공하는것!</p>
-<p><a href="https://www.garshol.priv.no/download/text/http-tut.html">How the web works: HTTP and CGI explained</a></p>
-<p><a href="https://www.alwaysgetbetter.com/2012/01/30/setting-wordpress-nginx-fastcgi/">Always Get Better</a></p>
-<p><a href="https://server-talk.tistory.com/308">CGI와 FastCGI 알아보기</a></p>
-<h1 id="nginx">Nginx</h1>
-<p>Nginx는 가장 인기있는 웹 서버 프로그램이며 웹서버로 시작했지만 리버스 프록시, 로드밸런스를 위해서도 사용됨. 개발 당시 가장 유명했던 아파치 웹서버가 한번에 10만개 이상 연결을 할 수 없다는 한계때문에 만들어졌음. 아파치는 연결 1개당 프로세스 하나를 할당하여 연결을 처리하는 반면 Nginx는 이벤트 중심의 비동기 아키텍쳐로 연결을 처리함. 따라서 적은 메모리 사용량으로 많은 커넥션을 핸들링 할 수 있게됨!</p>
-<p>비동기 I/O이기 때문에 큐에 I/O작업이 많이 쌓이는 경우 apache가 더 낫고, 이럴때는 Nginx를 리버스 프록시 서버로 사용할 수 있음.</p>
-<p>Nginx는 마스터 프로세스가 있어서 config를 읽고 검증한 후 그에 맞게 적용하고, 워커 프로세스를 생성 및 관리함.</p>
-<p>워커 프로세스의 수는 cpu의 코어수, 디스크 수를 고려하여 만들어지며 기본값으로 최대 core 수 만큼 만들어지기 때문에 컨텍스트 스위칭의 비용이 적음.</p>
-<p>또한 Nginx는 웹서버의 역할 뿐만 아니라, 리버스 프록시 서버의 역할도 할 수 있기 때문에 로드밸런싱과 보안상의 이점을 가져올 수 있음.</p>
-<ul>
-<li>
-<p>프록시</p>
-<p><img src="./asset/inception_image.006.jpeg" alt="inception_image.006.jpeg"></p>
-<ul>
-<li>프록시는 서버와 클라이언트 사이에서 중계역할을 함.  요청을 받으면 프록시 서버를 거쳐 다음 목적지로 가는것. 이는 보안상의 이유로 사용할 수 있고 프록시 서버에서 캐싱을 통해 빠르게 요청에 응답할 수 있다는 장점도 있음.</li>
-<li>Forward Proxy (proxy)
-<ul>
-<li>Forward Proxy는 대상에 접근하기 전에 proxy를 거쳐서 접근하는 거임. 만약 보안상 위험이 있거나 악의적인 접근이 있다면 여기서 접근을 제한할 수 있음. 방화벽같은 경우 서버에 접근을 한 뒤 막아주지만 프록시는 문제가 있다면 프록시 서버에서 더이상 진행되지 않기 때문에 이점이 있음.</li>
-<li>proxy와 vpn(virtual private network)이 비교되는데, proxy는 application level에서 ip만 암호화가 되는 것이고, vpn은 OS level에서 암호화 되기 때문에 ip 뿐만 아니라 모든 데이터가 암호화됨.</li>
-</ul>
-</li>
-<li>Reverse Proxy
-<ul>
-<li>Reverse Proxy는 클라이언트 입장에서 그냥 서버로 요청을 보내는 것 처럼 보임. 하지만 서버 측에 리버스 프록시가 있어서, 서버로 오는 모든 요청은 리버스 프록시를 거침. 이는 다양한 장점을 가져옴.
-<ul>
-<li>정적 컨텐츠를 캐싱하여 요청에 빠르게 응답할 수 있음</li>
-<li>SSL 암호화 같은 작업을 할 수 있어 웹서버의 부하를 줄임</li>
-<li>내부 서버의 정보를 숨길 수 있어서 보안상 좋음</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>
-<p>Load balancing</p>
-<ul>
-<li>Load balancing(부하 분산)은 요청이 너무 많아 여러대의 서버가 필요할때 사용함. 클라이언트의 요청을 가용한 적절한 서버에 보내서 처리함. 만약 서버 하나가 다운되어도 다른 서버에 요청을 전달하면 되니 안정성이 높아지고, 설정이 간단해서 확장성도 좋음. Nginx에선 어떤 방식으로 분산시킬지 정할 수 있음.</li>
-<li>application level (HTTP level)의 로드벨런싱은 리버스 프록시와 비슷하지만, 리버스 프록시는 HTTP 요청에 국한되는 반면 로드밸런싱은 다른 계층에 대하여도 조절할 수 있음. Nginx에서 제공하는 Load balancing은 HTTP 한정임.</li>
-</ul>
-</li>
-<li>
-<p>Nginx with SSL</p>
-<ul>
-<li>Nginx를 리버스 프록시 서버를 사용하여 모든 요청에 대해 https 연결을 요구할 수 있음.</li>
-<li>각 앱마다 SSL을 적용하는건 몹시 힘듦!</li>
-<li>하지만 Nginx에서 SSL을 적용하고 리버스 프록시로 활용하여 내부 다른 서버와 소통하면 간단하게 해결됨.</li>
-</ul>
-</li>
-<li>
-<p><a href="https://github.com/yongjulejule/TIL/blob/main/protocol/SSL-TLS.html">SSL, TLS란?</a></p>
-<ul>
-<li>보안 프로토콜. application layer 하단에 위치함. HTTPS 뿐만 아니라 다른 프로토콜도 암호화 가능 (ftps)</li>
-<li>TLS(Transport Layer Security)는 SSL(Secure Sockets Layer)이 업데이트 되면서 명칭이 바뀐것.
-<ul>
-<li>처음에 SSL로 시작하여 3.0까지 배포되었다가, SSL을 기반으로 다시 만든게 TLS 1.0 이며 SSL은 이제 추방됨.</li>
-<li>현재 SSL 인증서라 하면 모두 TLS 인증서임. 관례적으로 SSL이라는 용어를 사용하는것.</li>
-</ul>
-</li>
-<li>연결을 활성화 시키기 전에, TLS handshake 과정을 통하여 암호화된 연결을 수립하고, 이 연결을 통하여 통신함. 이때 신뢰성, 무결성, 개인정보 보호가 보장됨.</li>
-</ul>
-</li>
-</ul>
-<h1 id="nginx-config">Nginx-config</h1>
-<p>nginx config 파일은 여러 모듈들 단위로 작성됨. <code>/etc/nginx/nginx.conf</code>에 base module이 정의되어 있고 <code>/etc/nginx/conf.d/</code>추가적인 모듈들을 정의함.</p>
-<p>user, worker_process, error_log, pid 등 다양한 설정을 할 수 있으며 아래와 같이 블록 단위로 설정함.</p>
-<p>자세한 내용은 <a href="https://server-talk.tistory.com/303">링크</a> 참고</p>
-<pre><code><code><div>user  www-data;
+    <p>
+      필요한 패키지를 다운로드 받는 과정은 주로 <code>Dockerfile</code>의
+      <code>RUN</code> 커맨드를 활용하여 image cache를 활용하기 쉽게 구성하였고,
+      해당 컨테이너에서 서비스를 가동하기 위한 작업은
+      <code>entrypoint.sh</code> 에서 쉘 스크립트를 이용하여 작성함.
+    </p>
+    <h1 id="mariadb">MariaDB</h1>
+    <p>
+      <code>MariaDB</code>는 <code>RDBMS</code>(관계형 데이터베이스)로
+      <code>MySQL</code>에서 떨어져 나온 거임. <code>MySQL</code>이
+      <code>Oracle</code>에 인수되면서 상업적 이용을 위해선 비용을 지불해야
+      했고, 이를 맘에 안들게 여긴 <code>MySQL</code>의 핵심 창업자 Monty씨가
+      나와 동료들과 <code>MySQL</code>의 코드 베이스를 이용하여 만든게
+      <code>MariaDB</code>(5.5버전 기준으로 포크해서 만들음).
+      <code>MariaDB</code>는 현재도 오픈소스로 유지되고 있음.
+      <a href="https://db-engines.com/en/ranking">디비 랭킹 사이트</a>
+    </p>
+    <p>
+      <code>MySQL</code>과 완벽한 호환성을 위하여 <code>MySQL</code> 관련
+      바이너리를 실행해도 <code>MariaDB</code>가 돌아가게 할 수 있음.
+    </p>
+    <p>
+      분리된 시점이 어느정도 지난 만큼 내부 구조나 성능에 차이가 있긴 함! (<a
+        href="https://www.guru99.com/mariadb-vs-mysql.html#:~:text=MariaDB%20has%2012%20new%20storage,in%20MySQL%2C%20replication%20is%20slower."
+        >MariaDB vs mysql</a
+      >)
+    </p>
+    <h2 id="mariadb를-위한-도커-이미지">MariaDB를 위한 도커 이미지</h2>
+    <p>
+      <code>MariaDB</code>를 로컬에서 직접 설정하려면 <code>config</code> 작성,
+      <code>DB init</code>, <code>systemctl</code> 같은 도구들을 활용하여
+      하나하나 설정하면 되지만, 도커 이미지를 만들어서 컨테이너로 사용하려면 이
+      모든 작업이 자동으로 이루어져 유저가 바로 사용할 수 있어야 하고, 최대한
+      경량화 하는게 좋음.
+    </p>
+    <p>
+      <code>Alpine Linux</code>를 사용하기 때문에 <code>systemctl</code>같은
+      <code>Mariadb Daemon</code>을 다루는 도구가 없고, <code>alpine</code>에서
+      <code>openRC</code>라는 패키지가 <code>systemctl</code>을 대체하는데 도커
+      <code>base</code> 이미지로 받아오는 <code>alpine linux</code> 이미지에는
+      이 패키지도 안깔려있음. 따라서 직접 <code>mysqld(mariadbd)</code>를
+      이용하여 서버를 열어야 함!
+    </p>
+    <p>
+      <code>Dockerfile instruction</code> 을 이용하여 필요한
+      <code>MariaDB</code> 패키지를 다운받고, 쉘 스크립트에서 초기 DB install을
+      진행함. 이때 컨테이너 특성상 원격으로 DB에 접근하게 될텐데, root 유저로
+      원격에서 접근하는 것은 보안상 문제가 있으므로 이 단계에서 유저와 DB를
+      만들고 적절한 권한을 줘아함.
+    </p>
+    <h3 id="mysqld_safe의-함정">mysqld_safe의 함정</h3>
+    <p>
+      <code>Mariadb</code> 공식 문서에서 <code>Mariadb daemon</code>을
+      가동시키는 방법으로 <code>mysqld_safe(mariadbd_safe)</code>을 사용하길
+      추천하는데, <code>mysqld_safe</code>는 자식 프로세스로
+      <code>mariadbd</code>를 실행하고, 해당 프로세스를 관리해주는 역할을 함.
+      이때 <code>SIGTERM</code>이나 <code>SIGQUIT</code>같은 시그널을 받으면
+      자식인 <code>mariadbd</code>에 넘겨서 잘 종료되게 한 뒤 재시작을 시켜버림.
+    </p>
+    <p>
+      <code>Docker</code>로 <code>MariaDB container</code>를 관리하는
+      입장에서는, 서비스를 종료하고 싶을때 <code>signal</code>을 보내도 계속
+      살아나니 결국 <code>SIGKILL</code>으로 <code>MariaDB container</code> 를
+      강제종료 시켜서 이는 예상치 못한 문제를 낳을 수 있음! 따라서
+      <code>mariadbd</code>로 실행을 해야함.
+    </p>
+    <h1 id="wordpress--fastcgicommon-gateway-interface">
+      Wordpress + fastCGI(Common Gateway Interface)
+    </h1>
+    <p>
+      워드프레스는 오픈소스 웹 사이트 제작 도구로 전 세계 웹사이트 시장 점유율
+      1위를 차지하고 있는 서비스임. 백악관 홈페이지 부터 이노아카 블로그까지
+      정말 많이 사용됨…!
+    </p>
+    <p>
+      하지만 이런 오픈소스의 이점을 살리려면 프로그래밍 언어에 익숙해야 하고
+      영어에 언어 장벽이 없어야 해서 한국에선 자주 쓰이지 않음
+    </p>
+    <h2 id="wordpress로-하라는-이유-아마">Wordpress로 하라는 이유 (아마…)</h2>
+    <p>
+      LAMP(Linux + Apache + MySQL + PHP) 스택 이라는 가장 널리 사용되는 웹 앱에
+      대한 소프트웨어 스택이 있음. 모두 오픈소스 소프트웨어로 상용 패키지를
+      대체할 수 있음을 소개하기 위해 1998년에 나온 용어이며 워드프레스 같은 웹
+      프레임워크를 호스팅 하기에 충분한 최초의 오픈소스 소프트웨어 스택 중
+      하나여서 이 용어와 개념이 인기를 얻음.
+    </p>
+    <p>
+      <img src="./asset/LAMP.png" alt="LAMP 스택" />
+    </p>
+    <blockquote>
+      <p>
+        출처 :
+        <a href="https://en.wikipedia.org/wiki/LAMP_(software_bundle)"
+          >https://en.wikipedia.org/wiki/LAMP_(software_bundle)</a
+        >
+      </p>
+    </blockquote>
+    <p>
+      요즘은 LAMP 스택에서 파생된 LEMP 스택 (apache 대신 nginx), WAMP 스택
+      (linux 대신 windows), MEAN(MongoDB + Express + Angular.js + Node.js) 등
+      많은 용어가 나왔지만 구성은 LAMP 스택과 비슷함.
+    </p>
+    <p>
+      Wordpress는 호스팅 서버가 따로 필요하고, DB와 연결되어 작동하기 때문에 이
+      LAMP 스택을 활용하기에 정말 좋은 도구임
+    </p>
+    <h2 id="fastcgi">fastCGI</h2>
+    <h3 id="cgi">CGI</h3>
+    <ul>
+      <li>
+        <p>
+          Common Gateway Interfaced의 약자. <code>html</code>만 제공하다가 외부
+          앱과 상호작용을 할 필요성을 느껴서 나온 동적 페이지를 제공하기 위한
+          규격화된 약속. 웹서버와 서로 데이터를 주고받는 방식으로 작동함!
+        </p>
+      </li>
+      <li>
+        <p>
+          어떤 언어로든 작성될 수 있으며 url에
+          <code
+            >&lt;protocol&gt;://&lt;domain&gt;/(cgi-bin/&lt;cgi_program_name&gt;|&lt;program&gt;.cgi)</code
+          >
+          방식을 주로 씀. 만약 URL에 query string이 있으면 환경변수로
+          <code>QUERY_STRING</code>이 설정되어 <code>CGI</code> 프로그램에서
+          사용할 수 있음.
+        </p>
+      </li>
+      <li>
+        <p>
+          <code>CGI</code> 프로그램이 요청된 작업을 수행하고
+          <code>html</code>문서 형태로 <code>stdout</code>으로 쏴주면, 서버가
+          받아서 <code>html</code> 문서를 유저에게 쏴주는 방식.
+        </p>
+        <p>
+          <img
+            src="./asset/inception_image.001.jpeg"
+            alt="inception_image.001.jpeg"
+          />
+        </p>
+      </li>
+      <li>
+        <p>
+          하지만 1 요청당 1 프로세스를 생성하고, 요청이 끝나면 프로세스가
+          종료되는 방식이라서 성능이 구림
+        </p>
+        <p>
+          <img
+            src="./asset/inception_image.002.jpeg"
+            alt="inception_image.002.jpeg"
+          />
+        </p>
+      </li>
+      <li>
+        <p>
+          <code>FastCGI</code>는 프로세스들을 생성해두고, 한 프로세스당 여러개의
+          요청을 계속 처리함.
+        </p>
+      </li>
+      <li>
+        <p><code>FastCGI</code>가 메모리를 더 많이 소모하지만 더 빠름!</p>
+        <p>
+          <img
+            src="./asset/inception_image.003.jpeg"
+            alt="inception_image.003.jpeg"
+          />
+        </p>
+      </li>
+    </ul>
+    <p>
+      <code>php-fpm</code>은 <code>php</code>에서 공식적으로
+      <code>FastCGI</code>를 지원하면서 만들어진것. (PHP Fastcgi Process
+      Manager)
+    </p>
+    <p>
+      <code>Wordpress + php-fpm</code>은 워드프레스를 <code>php-fpm</code>을
+      이용하여 <code>FastCGI</code>로 제공하는것!
+    </p>
+    <p>
+      <a href="https://www.garshol.priv.no/download/text/http-tut.html"
+        >How the web works: HTTP and CGI explained</a
+      >
+    </p>
+    <p>
+      <a
+        href="https://www.alwaysgetbetter.com/2012/01/30/setting-wordpress-nginx-fastcgi/"
+        >Always Get Better</a
+      >
+    </p>
+    <p>
+      <a href="https://server-talk.tistory.com/308">CGI와 FastCGI 알아보기</a>
+    </p>
+    <h1 id="nginx">Nginx</h1>
+    <p>
+      Nginx는 가장 인기있는 웹 서버 프로그램이며 웹서버로 시작했지만 리버스
+      프록시, 로드밸런스를 위해서도 사용됨. 개발 당시 가장 유명했던 아파치
+      웹서버가 한번에 10만개 이상 연결을 할 수 없다는 한계때문에 만들어졌음.
+      아파치는 연결 1개당 프로세스 하나를 할당하여 연결을 처리하는 반면 Nginx는
+      이벤트 중심의 비동기 아키텍쳐로 연결을 처리함. 따라서 적은 메모리
+      사용량으로 많은 커넥션을 핸들링 할 수 있게됨!
+    </p>
+    <p>
+      비동기 I/O이기 때문에 큐에 I/O작업이 많이 쌓이는 경우 apache가 더 낫고,
+      이럴때는 Nginx를 리버스 프록시 서버로 사용할 수 있음.
+    </p>
+    <p>
+      Nginx는 마스터 프로세스가 있어서 config를 읽고 검증한 후 그에 맞게
+      적용하고, 워커 프로세스를 생성 및 관리함.
+    </p>
+    <p>
+      워커 프로세스의 수는 cpu의 코어수, 디스크 수를 고려하여 만들어지며
+      기본값으로 최대 core 수 만큼 만들어지기 때문에 컨텍스트 스위칭의 비용이
+      적음.
+    </p>
+    <p>
+      또한 Nginx는 웹서버의 역할 뿐만 아니라, 리버스 프록시 서버의 역할도 할 수
+      있기 때문에 로드밸런싱과 보안상의 이점을 가져올 수 있음.
+    </p>
+    <ul>
+      <li>
+        <p>프록시</p>
+        <p>
+          <img
+            src="./asset/inception_image.006.jpeg"
+            alt="inception_image.006.jpeg"
+          />
+        </p>
+        <ul>
+          <li>
+            프록시는 서버와 클라이언트 사이에서 중계역할을 함. 요청을 받으면
+            프록시 서버를 거쳐 다음 목적지로 가는것. 이는 보안상의 이유로 사용할
+            수 있고 프록시 서버에서 캐싱을 통해 빠르게 요청에 응답할 수 있다는
+            장점도 있음.
+          </li>
+          <li>
+            Forward Proxy (proxy)
+            <ul>
+              <li>
+                Forward Proxy는 대상에 접근하기 전에 proxy를 거쳐서 접근하는
+                거임. 만약 보안상 위험이 있거나 악의적인 접근이 있다면 여기서
+                접근을 제한할 수 있음. 방화벽같은 경우 서버에 접근을 한 뒤
+                막아주지만 프록시는 문제가 있다면 프록시 서버에서 더이상
+                진행되지 않기 때문에 이점이 있음.
+              </li>
+              <li>
+                proxy와 vpn(virtual private network)이 비교되는데, proxy는
+                application level에서 ip만 암호화가 되는 것이고, vpn은 OS
+                level에서 암호화 되기 때문에 ip 뿐만 아니라 모든 데이터가
+                암호화됨.
+              </li>
+            </ul>
+          </li>
+          <li>
+            Reverse Proxy
+            <ul>
+              <li>
+                Reverse Proxy는 클라이언트 입장에서 그냥 서버로 요청을 보내는 것
+                처럼 보임. 하지만 서버 측에 리버스 프록시가 있어서, 서버로 오는
+                모든 요청은 리버스 프록시를 거침. 이는 다양한 장점을 가져옴.
+                <ul>
+                  <li>정적 컨텐츠를 캐싱하여 요청에 빠르게 응답할 수 있음</li>
+                  <li>
+                    SSL 암호화 같은 작업을 할 수 있어 웹서버의 부하를 줄임
+                  </li>
+                  <li>내부 서버의 정보를 숨길 수 있어서 보안상 좋음</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>Load balancing</p>
+        <ul>
+          <li>
+            Load balancing(부하 분산)은 요청이 너무 많아 여러대의 서버가
+            필요할때 사용함. 클라이언트의 요청을 가용한 적절한 서버에 보내서
+            처리함. 만약 서버 하나가 다운되어도 다른 서버에 요청을 전달하면 되니
+            안정성이 높아지고, 설정이 간단해서 확장성도 좋음. Nginx에선 어떤
+            방식으로 분산시킬지 정할 수 있음.
+          </li>
+          <li>
+            application level (HTTP level)의 로드벨런싱은 리버스 프록시와
+            비슷하지만, 리버스 프록시는 HTTP 요청에 국한되는 반면 로드밸런싱은
+            다른 계층에 대하여도 조절할 수 있음. Nginx에서 제공하는 Load
+            balancing은 HTTP 한정임.
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>Nginx with SSL</p>
+        <ul>
+          <li>
+            Nginx를 리버스 프록시 서버를 사용하여 모든 요청에 대해 https 연결을
+            요구할 수 있음.
+          </li>
+          <li>각 앱마다 SSL을 적용하는건 몹시 힘듦!</li>
+          <li>
+            하지만 Nginx에서 SSL을 적용하고 리버스 프록시로 활용하여 내부 다른
+            서버와 소통하면 간단하게 해결됨.
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>
+          <a
+            href="https://github.com/yongjulejule/TIL/blob/main/protocol/SSL-TLS.html"
+            >SSL, TLS란?</a
+          >
+        </p>
+        <ul>
+          <li>
+            보안 프로토콜. application layer 하단에 위치함. HTTPS 뿐만 아니라
+            다른 프로토콜도 암호화 가능 (ftps)
+          </li>
+          <li>
+            TLS(Transport Layer Security)는 SSL(Secure Sockets Layer)이 업데이트
+            되면서 명칭이 바뀐것.
+            <ul>
+              <li>
+                처음에 SSL로 시작하여 3.0까지 배포되었다가, SSL을 기반으로 다시
+                만든게 TLS 1.0 이며 SSL은 이제 추방됨.
+              </li>
+              <li>
+                현재 SSL 인증서라 하면 모두 TLS 인증서임. 관례적으로 SSL이라는
+                용어를 사용하는것.
+              </li>
+            </ul>
+          </li>
+          <li>
+            연결을 활성화 시키기 전에, TLS handshake 과정을 통하여 암호화된
+            연결을 수립하고, 이 연결을 통하여 통신함. 이때 신뢰성, 무결성,
+            개인정보 보호가 보장됨.
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <h1 id="nginx-config">Nginx-config</h1>
+    <p>
+      nginx config 파일은 여러 모듈들 단위로 작성됨.
+      <code>/etc/nginx/nginx.conf</code>에 base module이 정의되어 있고
+      <code>/etc/nginx/conf.d/</code>추가적인 모듈들을 정의함.
+    </p>
+    <p>
+      user, worker_process, error_log, pid 등 다양한 설정을 할 수 있으며 아래와
+      같이 블록 단위로 설정함.
+    </p>
+    <p>
+      자세한 내용은 <a href="https://server-talk.tistory.com/303">링크</a> 참고
+    </p>
+    <pre><code><code><div>user  www-data;
 worker_processes  auto;
 
 error_log  /var/log/nginx/error.log notice;
@@ -365,9 +852,16 @@ http {
 	}
 
 </div></code></code></pre>
-<h2 id="nginx-tls">Nginx TLS</h2>
-<p>TLS에 대한 설명은 <a href="https://www.notion.so/protocol/SSL-TLS.html">링크</a> 참조</p>
-<pre><code><code><div>server {
+    <h2 id="nginx-tls">Nginx TLS</h2>
+    <p>
+      TLS에 대한 설명은
+      <a
+        href="https://github.com/yongjulejule/TIL/blob/main/protocol/SSL-TLS.html"
+        >링크</a
+      >
+      참조
+    </p>
+    <pre><code><code><div>server {
     listen       443 ssl http2;
     server_name  ${DOMAIN_NAME};
 
@@ -388,21 +882,39 @@ http {
 }
 
 </div></code></code></pre>
-<p>위와 같은 방식으로 nginx에 TLS 설정을 할 수 있음.</p>
-<p><code>ssl_certificate</code> : 인증서 파일의 위치
-<code>ssl_certificate_key</code> : 인증서 파일의 키 파일의 위치
-<code>ssl_session_timeout</code> : TLS 세션 유효시간
-<code>ssl_protocols</code> : 사용할 프로토콜
-<code>ssl_ciphers</code> : 사용할 암호화 방식 기본값은 <code>HIGH:!aNULL:!MD5</code> 이며 <code>openssl ciphers -v &quot;HIGH:!aNULL:!MD5&quot;</code> 명령어에 대응되는 암호화 방식이 모두 포함됨. <a href="https://www.notion.so/openssl/openssl.html">openssl 참고</a>,
-<code>ssl_prefer_server_ciphers</code> : TLS 암호화 방식 협상 과정에서 서버측 암호화 방식 우선.</p>
-<p>더 많은 정보는 <a href="http://nginx.org/en/docs/http/ngx_http_ssl_module.html">nginx ssl config</a><a href="https://www.openssl.org/docs/manmaster/man1/openssl-ciphers.html">openssl ciphers</a> 참고</p>
-<h2 id="nginx-fastcgi">Nginx fastCGI</h2>
-<h3 id="php-fpm">php-fpm</h3>
-<p>php-fpm은 php를 fcgi모드로 동작하게 해주며, 다양한 최적화가 되어있음</p>
-<p><a href="https://opentutorials.org/module/384/4332">상세정보</a></p>
-<h3 id="nginx-fcgi">Nginx fcgi</h3>
-<p>nginx에는 fcgi을 위한 다양한 config 옵션을 지원함</p>
-<pre><code><code><div>location ~ \\.php$ {
+    <p>위와 같은 방식으로 nginx에 TLS 설정을 할 수 있음.</p>
+    <p>
+      <code>ssl_certificate</code> : 인증서 파일의 위치
+      <code>ssl_certificate_key</code> : 인증서 파일의 키 파일의 위치
+      <code>ssl_session_timeout</code> : TLS 세션 유효시간
+      <code>ssl_protocols</code> : 사용할 프로토콜 <code>ssl_ciphers</code> :
+      사용할 암호화 방식 기본값은 <code>HIGH:!aNULL:!MD5</code> 이며
+      <code>openssl ciphers -v &quot;HIGH:!aNULL:!MD5&quot;</code> 명령어에
+      대응되는 암호화 방식이 모두 포함됨.
+      <a href="https://www.notion.so/openssl/openssl.html">openssl 참고</a>,
+      <code>ssl_prefer_server_ciphers</code> : TLS 암호화 방식 협상 과정에서
+      서버측 암호화 방식 우선.
+    </p>
+    <p>
+      더 많은 정보는
+      <a href="http://nginx.org/en/docs/http/ngx_http_ssl_module.html"
+        >nginx ssl config</a
+      >,
+      <a href="https://www.openssl.org/docs/manmaster/man1/openssl-ciphers.html"
+        >openssl ciphers</a
+      >
+      참고
+    </p>
+    <h2 id="nginx-fastcgi">Nginx fastCGI</h2>
+    <h3 id="php-fpm">php-fpm</h3>
+    <p>
+      <code>php-fpm</code>은 <code>php</code>를 <code>fcgi</code>모드로 동작하게
+      해주며, 다양한 최적화가 되어있음
+    </p>
+    <p><a href="https://opentutorials.org/module/384/4332">상세정보</a></p>
+    <h3 id="nginx-fcgi">Nginx fcgi</h3>
+    <p>Nginx에는 <code>fcgi</code>을 위한 다양한 config 옵션을 지원함</p>
+    <pre><code><code><div>location ~ \\.php$ {
    fastcgi_pass   wordpress:9000;
    fastcgi_index  index.php;
    fastcgi_param  SCRIPT_FILENAME  /var/www/html/wordpress$fastcgi_script_name;
@@ -410,12 +922,18 @@ http {
 }
 
 </div></code></code></pre>
-<p><code>fastcgi_pass</code> : 해당 url로 들어온 요청에 대하여 php-fpm과 nginx을 연결하기 위한 인터페이스를 지정.
-<code>fastcgi_index</code> : 요청된 URL이 / 로 끝날때 자동으로 덧붙임
-<code>fastcgi_param</code> : 요청이 fastCGI로 전달되도록 구성하는 지시어.</p>
-<h2 id="nginx-proxy">Nginx proxy</h2>
-<p>Nginx를 reverse proxy로 활용하기 위한 설정이며 특정 url의 포트로 보낼 뿐만 아니라 http 버젼, 헤더, 버퍼 등을 설정할 수 있음.</p>
-<pre><code><code><div>location /backend {
+    <p>
+      <code>fastcgi_pass</code> : 해당 url로 들어온 요청에 대하여 php-fpm과
+      nginx을 연결하기 위한 인터페이스를 지정. <code>fastcgi_index</code> :
+      요청된 URL이 / 로 끝날때 자동으로 덧붙임 <code>fastcgi_param</code> :
+      요청이 fastCGI로 전달되도록 구성하는 지시어.
+    </p>
+    <h2 id="nginx-proxy">Nginx proxy</h2>
+    <p>
+      Nginx를 <code>reverse proxy</code>로 활용하기 위한 설정이며 특정 url의
+      포트로 보낼 뿐만 아니라 http 버전, 헤더, 버퍼 등을 설정할 수 있음.
+    </p>
+    <pre><code><code><div>location /backend {
 		proxy_pass &lt;http://backend:3000&gt;;
 		proxy_http_version 1.1;
 		proxy_set_header X-Real-IP $remote_addr;
@@ -424,104 +942,204 @@ http {
 }
 
 </div></code></code></pre>
-<p><code>proxy_pass</code> : 요청이 들어오면 어떤 url로 전달되는지 지정
-<code>proxy_http_version</code> : http 버전 지정
-<code>proxy_set_header</code> : 요청에 대한 헤더 설정</p>
-<p><img src="./asset/inception_image.004.jpeg" alt="inception_image.004.jpeg"></p>
-<h1 id="redis">Redis</h1>
-<ul>
-<li>NoSQL, in-memory database로 메모리에 I/O 작업을 하기 때문에 desk I/O 보다 훨씬 빠름.</li>
-<li>종료시 및 특정 시점마다 디스크에 저장하는 방식으로 작동</li>
-<li>단일 쓰레딩 모델으로 컨텍스트 스위칭이나 락의 비용이 없음.</li>
-<li>Non-Blocking I/O 모델로 단일 쓰레드임에도 빠름</li>
-<li>어느정도 데이터가 쌓였을때, 혹은 종료할때 dump.rdb 란 파일에 내용을 저장하여 종료하여도 데이터가 남아있음.</li>
-</ul>
-<h1 id="ftp-file-transport-protocol">FTP (File Transport Protocol)</h1>
-<p>FTP는 파일 전송 프로토콜으로, 서버와 클라이언트 사이에 파일을 전송하기 위해 나온 것임. 1971년에 나왔으며 연결하기 위해선 로그인을 해야함(서버가 허용한 경우 익명 사용자 가능).하지만 이런 정보가 plaintext 형태로 넘어가기 때문에 보안상 상당히 취약하며, 2021년에 대부분 브라우저에서 지원을 중단하고 SFTP(ssh + FTP) 나 FTPS(FTP + TLS)를 사용함.</p>
-<p>이 FTP는  파일 전송을 위해 두개의 포트를 사용하며 한 포트는 연결을 위해 사용하고(command port)  다른 포트는 데이터 전송을 위해 사용하며(data port) 여기서 passive mode와 active mode로 나뉨.</p>
-<p>command port를 위해선 통상적으로 21번 포트를 사용하지만 data port는 passive mode와 active mode에서 서로 다름.</p>
-<h2 id="active-mode">active mode</h2>
-<p>active mode에서는 다음과 같이 진행됨</p>
-<ol>
-<li>클라이언트에서 임의의 포트(N &gt; 1023)를 FTP 서버의 21번 포트에 연결함. (command port)</li>
-<li>클라이언트에서 data port로 쓸 N+1번 포트의 정보를 서버에게 넘겨줌.</li>
-<li>서버는 20번 포트(데이터 포트)에서 클라이언트의 N+1 포트로 연결함. (data port)</li>
-</ol>
-<p><img src="./asset/inception_image.007.jpeg" alt="inception_image.007.jpeg"></p>
-<p>이때 client측에서 문제가 발생함. client는 서버와 data port로 실제로 연결된게 아니며 단순히 서버에게 data port를 위하여 어떤 포트를 Listening 할건지 알려주는 거임. 서버측에서 data port로 연결하려고 하면 클라이언트측 방화벽에선 그저 외부 시스템에서 연결을 하려는 것으로 보이기 때문에 방화벽에 막힘.</p>
-<h2 id="passive-mode">passive mode</h2>
-<p>active mode의 문제를 해결하기 위해 등장한 방법이 passive mode이며 PASV라고도 불림.</p>
-<p>passive mode FTP에서 클라이언트는 두 연결을 모두 시작하여 방화벽 문제를 해결함.</p>
-<ol>
-<li>FTP연결을 열 때 클라이언트는 두개의 랜덤 포트를 로컬에서 열음.(N&gt;1023, N+1)</li>
-<li>첫번째 포트는 서버의 21번 포트에 연결됨.(command port)</li>
-<li>클라이언트가 psav 명령을 보내서 서버에서 랜덤 포트 P (p &gt; 1023)을 열고 클라이언트에게 P를 알려줌.</li>
-<li>클라이언트는 N+1에서 P로 연결함. (data port)</li>
-</ol>
-<p><img src="./asset/inception_image.008.jpeg" alt="inception_image.008.jpeg"></p>
-<p>여기서 서버가 특정 포트들을(data port) 열어둬야 한다는 문제가 발생함. 하지만 서버측에서 특정 포트 범위를 data port로 쓰도록 설정하여 문제를 해결할 수 있음.</p>
-<p>또한 passive mode를 지원하지 않는 클라이언트가 있을 수 있으나 요즘엔 그런거 없음.</p>
-<p><a href="http://slacksite.com/other/ftp.html">active FTP vs passive FTP</a></p>
-<h2 id="ftp의-장단점">FTP의 장단점</h2>
-<h3 id="장점">장점</h3>
-<ul>
-<li>여러 파일과 폴더를 전송 가능.</li>
-<li>연결이 끊어지면 전송 재개 가능.</li>
-<li>전송할 파일의 크기 제한이 없음.</li>
-<li>HTTP보다 빠른 데이터 전송.</li>
-<li>많은 FTP client가 파일 전송 예약을 지원함.</li>
-</ul>
-<h3 id="단점">단점</h3>
-<ul>
-<li>내용이 그대로 가서 보안상 매우 좋지 않음.(전송되는 데이터 뿐만 아니라 로그인할때 사용하는 id, password까지 텍스트 그대로 전송됨)</li>
-<li>적은 용량의 파일을 여러 클라이언트에 연결해야 하는 경우 비효율적임. (이를 위해 HTTP가 나옴)</li>
-</ul>
-<h2 id="ftp-vs-http">FTP vs HTTP</h2>
-<table>
-<thead>
-<tr>
-<th>FTP</th>
-<th>HTTP</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>인증이 필요함</td>
-<td>인증이 필요하지 않음</td>
-</tr>
-<tr>
-<td>대용량 파일 전송에 효율적</td>
-<td>작은 파일을 전송할 때 효율적</td>
-</tr>
-<tr>
-<td>파일이 메모리에 저장됨</td>
-<td>메모리에 저장되지 않음</td>
-</tr>
-<tr>
-<td>클라이언트와 서버간에 파일을 다운로드하고 업로드 할때 사용</td>
-<td>웹페이지 전송에 사용</td>
-</tr>
-<tr>
-<td>상태(state)를 저장하는 프로토콜</td>
-<td>상태를 저장하지 않는(stateless) 프로토콜</td>
-</tr>
-<tr>
-<td>양방향 통신 시스템 지원</td>
-<td>단방향 통신 시스템</td>
-</tr>
-<tr>
-<td>data connection, command connection으로 나뉨</td>
-<td>data connection만 있음</td>
-</tr>
-</tbody>
-</table>
-<p><a href="https://afteracademy.com/blog/what-is-ftp-and-how-does-an-ftp-work">how ftp works?</a></p>
-<h2 id="ftp-server-for-linux">ftp-server for linux</h2>
-<p>리눅스의 ftp-server 프로그램으로 vsftp, pro-ftp, pure-ftp등 다양한 프로그램이 있는데, alpine linux와 호환이 잘되는 vsftp를 선택.</p>
-<p>ftp 특성상 로그인하여 접속하게 되므로 적절한 유저를 잘 생성해줘야 하고, 파일시스템에 접근하기 때문에 권한 설정도 잘 해줘야함. 외부에서 접근할 수 있는 디렉토리를 config파일에 정의해서 특정 디렉토리에만 접근하게 해주고, container로 관리하기 위해 로깅 및 background 설정 정도를 해주면 filezilla를 통해 손쉽게 접근 가능해짐.</p>
-<p><a href="https://2factor.tistory.com/96">vsftpd config</a> 참조</p>
+    <p>
+      <code>proxy_pass</code> : 요청이 들어오면 어떤 url로 전달되는지 지정
+      <code>proxy_http_version</code> : http 버전 지정
+      <code>proxy_set_header</code> : 요청에 대한 헤더 설정
+    </p>
+    <p>
+      <img
+        src="./asset/inception_image.004.jpeg"
+        alt="inception_image.004.jpeg"
+      />
+    </p>
+    <h1 id="redis">Redis</h1>
+    <ul>
+      <li>
+        NoSQL, in-memory database로 메모리에 I/O 작업을 하기 때문에 desk I/O
+        보다 훨씬 빠름.
+      </li>
+      <li>종료시 및 특정 시점마다 디스크에 저장하는 방식으로 작동</li>
+      <li>단일 쓰레딩 모델으로 컨텍스트 스위칭이나 락의 비용이 없음.</li>
+      <li>Non-Blocking I/O 모델로 단일 쓰레드임에도 빠름</li>
+      <li>
+        어느정도 데이터가 쌓였을때, 혹은 종료할때 <code>dump.rdb</code> 란
+        파일에 내용을 저장하여 종료하여도 데이터가 남아있음.
+      </li>
+    </ul>
+    <h1 id="ftp-file-transport-protocol">FTP (File Transport Protocol)</h1>
+    <p>
+      <code>FTP</code>는 파일 전송 프로토콜으로, 서버와 클라이언트 사이에 파일을
+      전송하기 위해 나온 것임. 1971년에 나왔으며 연결하기 위해선 로그인을
+      해야함(서버가 허용한 경우 익명 사용자 가능).하지만 이런 정보가 plaintext
+      형태로 넘어가기 때문에 보안상 상당히 취약하며, 2021년에 대부분
+      브라우저에서 지원을 중단하고 <code>SFTP</code>(ssh + FTP) 나
+      <code>FTPS</code>(FTP + TLS)를 사용함.
+    </p>
+    <p>
+      이 <code>FTP</code>는 파일 전송을 위해 두개의 포트를 사용하며 한 포트는
+      연결을 위해 사용하고(command port) 다른 포트는 데이터 전송을 위해
+      사용하며(data port) 여기서 <code>passive mode</code>와
+      <code>active mode</code>로 나뉨.
+    </p>
+    <p>
+      <code>command port</code>는 통상적으로 21번 포트를 사용하지만
+      <code>data port</code>는 <code>passive mode</code>와
+      <code>active mode</code>에서 서로 다름.
+    </p>
+    <h2 id="active-mode">active mode</h2>
+    <p><code>active mode</code>에서는 다음과 같이 진행됨</p>
+    <ol>
+      <li>
+        클라이언트에서 임의의 포트(N &gt; 1023)를 <code>FTP</code> 서버의 21번
+        포트에 연결함. (command port)
+      </li>
+      <li>
+        클라이언트에서 <code>data port</code>로 쓸 N+1번 포트의 정보를 서버에게
+        넘겨줌.
+      </li>
+      <li>
+        서버는 20번 포트(데이터 포트)에서 클라이언트의 N+1 포트로 연결함. (data
+        port)
+      </li>
+    </ol>
+    <p>
+      <img
+        src="./asset/inception_image.007.jpeg"
+        alt="inception_image.007.jpeg"
+      />
+    </p>
+    <p>
+      이때 client측에서 문제가 발생함. client는 서버와 <code>data port</code>로
+      실제로 연결된게 아니며 단순히 서버에게 <code>data port</code>를 위하여
+      어떤 포트를 Listening 할건지 알려주는 거임. 서버측에서
+      <code>data port</code>로 연결하려고 하면 클라이언트측 방화벽에선 그저 외부
+      시스템에서 연결을 하려는 것으로 보이기 때문에 방화벽에 막힘.
+    </p>
+    <h2 id="passive-mode">passive mode</h2>
+    <p>
+      <code>active mode</code>의 문제를 해결하기 위해 등장한 방법이
+      <code>passive mode</code>이며 <code>PASV</code>라고도 불림.
+    </p>
+    <p>
+      <code>passive mode</code> FTP에서 클라이언트는 두 연결을 모두 시작하여
+      방화벽 문제를 해결함.
+    </p>
+    <ol>
+      <li>
+        <code>FTP</code>연결을 열 때 클라이언트는 두개의 랜덤 포트를 로컬에서
+        열음.(N&gt;1023, N+1)
+      </li>
+      <li>첫번째 포트는 서버의 21번 포트에 연결됨.(command port)</li>
+      <li>
+        클라이언트가 <code>PASV</code> 명령을 보내서 서버에서 랜덤 포트 P (p
+        &gt; 1023)을 열고 클라이언트에게 P를 알려줌.
+      </li>
+      <li>클라이언트는 N+1에서 P로 연결함. (data port)</li>
+    </ol>
+    <p>
+      <img
+        src="./asset/inception_image.008.jpeg"
+        alt="inception_image.008.jpeg"
+      />
+    </p>
+    <p>
+      여기서 서버가 특정 포트들을(<code>data port</code>) 열어둬야 한다는 문제가
+      발생함. 하지만 서버측에서 특정 포트 범위를 <code>data port</code>로 쓰도록
+      설정하여 문제를 해결할 수 있음.
+    </p>
+    <p>
+      또한 <code>passive mode</code>를 지원하지 않는 클라이언트가 있을 수 있으나
+      요즘엔 그런거 없음.
+    </p>
+    <p>
+      <a href="http://slacksite.com/other/ftp.html"
+        >active FTP vs passive FTP</a
+      >
+    </p>
+    <h2 id="ftp의-장단점">FTP의 장단점</h2>
+    <h3 id="장점">장점</h3>
+    <ul>
+      <li>여러 파일과 폴더를 전송 가능.</li>
+      <li>연결이 끊어지면 전송 재개 가능.</li>
+      <li>전송할 파일의 크기 제한이 없음.</li>
+      <li>HTTP보다 빠른 데이터 전송.</li>
+      <li>많은 FTP client가 파일 전송 예약을 지원함.</li>
+    </ul>
+    <h3 id="단점">단점</h3>
+    <ul>
+      <li>
+        내용이 그대로 가서 보안상 매우 좋지 않음.(전송되는 데이터 뿐만 아니라
+        로그인할때 사용하는 id, password까지 텍스트 그대로 전송됨)
+      </li>
+      <li>
+        적은 용량의 파일을 여러 클라이언트에 연결해야 하는 경우 비효율적임.
+        (이를 위해 HTTP가 나옴)
+      </li>
+    </ul>
+    <h2 id="ftp-vs-http">FTP vs HTTP</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>FTP</th>
+          <th>HTTP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>인증이 필요함</td>
+          <td>인증이 필요하지 않음</td>
+        </tr>
+        <tr>
+          <td>대용량 파일 전송에 효율적</td>
+          <td>작은 파일을 전송할 때 효율적</td>
+        </tr>
+        <tr>
+          <td>파일이 메모리에 저장됨</td>
+          <td>메모리에 저장되지 않음</td>
+        </tr>
+        <tr>
+          <td>클라이언트와 서버간에 파일을 다운로드하고 업로드 할때 사용</td>
+          <td>웹페이지 전송에 사용</td>
+        </tr>
+        <tr>
+          <td>상태(state)를 저장하는 프로토콜</td>
+          <td>상태를 저장하지 않는(stateless) 프로토콜</td>
+        </tr>
+        <tr>
+          <td>양방향 통신 시스템 지원</td>
+          <td>단방향 통신 시스템</td>
+        </tr>
+        <tr>
+          <td>data connection, command connection으로 나뉨</td>
+          <td>data connection만 있음</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <a
+        href="https://afteracademy.com/blog/what-is-ftp-and-how-does-an-ftp-work"
+        >how ftp works?</a
+      >
+    </p>
+    <h2 id="ftp-server-for-linux">ftp-server for linux</h2>
+    <p>
+      리눅스의 <code>ftp-server</code> 프로그램으로 <code>vsftp</code>,
+      <code>pro-ftp</code>, <code>pure-ftp</code>등 다양한 프로그램이 있는데,
+      alpine linux와 호환이 잘되는 <code>vsftp</code>를 선택.
+    </p>
+    <p>
+      <code>ftp</code> 특성상 로그인하여 접속하게 되므로 적절한 유저를 잘
+      생성해줘야 하고, 파일시스템에 접근하기 때문에 권한 설정도 잘 해줘야함.
+      외부에서 접근할 수 있는 디렉토리를 config파일에 정의해서 특정 디렉토리에만
+      접근하게 해주고, container로 관리하기 위해 로깅 및 background 설정 정도를
+      해주면 <code>filezilla</code>를 통해 손쉽게 접근 가능해짐.
+    </p>
+    <p><a href="https://2factor.tistory.com/96">vsftpd config</a> 참조</p>
 
-        <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
-        
-    </body>
-    </html>
+    <script
+      async
+      src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"
+    ></script>
+  </body>
+</html>

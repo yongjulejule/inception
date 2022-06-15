@@ -1,6 +1,13 @@
 # Inception
 
+아래와 같은 구조로 서비스들을 Docker container로 제공하는 프로젝트.
+
+![inception](./asset/inception.jpeg)
+
+# Table of Contents
+
 - [Inception](#inception)
+- [Table of Contents](#table-of-contents)
 - [Docker](#docker)
 	- [도커란 뭘까?](#도커란-뭘까)
 	- [Docker vs Virtual Machine](#docker-vs-virtual-machine)
@@ -35,25 +42,23 @@
 	- [FTP vs HTTP](#ftp-vs-http)
 	- [ftp-server for linux](#ftp-server-for-linux)
 
-![Screen Shot 2022-06-06 at 2.29.28 PM.png](./asset/Screen_Shot_2022-06-06_at_2.29.28_PM.png)
-
 # Docker
 
 ## 도커란 뭘까?
 
-도커는 OS-level 가상화를 통해 컨테이너를 쉽게 다루게 해주는 플랫폼임. 이미지 기반으로 컨테이너를 손쉽게 생성한다는 점으로, 어플리케이션마다 필요한 환경을 구축, 테스트, 배포하기 좋음!
+도커는 [OS-level](https://en.wikipedia.org/wiki/OS-level_virtualization) 가상화를 통해 컨테이너를 쉽게 다루게 해주는 플랫폼임. 이미지 기반으로 컨테이너를 손쉽게 생성한다는 점으로, 어플리케이션마다 필요한 환경을 구축, 테스트, 배포하기 좋음!
 
 컨테이너 기술은 그 전부터 존재했으며 도커는 이를 정말 잘 활용할 수 있도록 만들어졌을 뿐임.
 
 ![docker-architecture.jpeg](./asset/docker-architecture.jpeg)
 
-이와 같이 다양한 기능을 제공하는데, client(shell or docker desktop app)에서 명령을 하면 Docker daemon이 이미지와 컨테이너를 관리하고, 필요하면 Registry(주로 Docker hub)에서 이미지를 가져오기도 함.
+이와 같이 다양한 기능을 제공하는데, client(shell or docker desktop app)에서 명령을 하면 `Docker daemon`이 이미지와 컨테이너를 관리하고, 필요하면 Registry(주로 Docker hub)에서 이미지를 가져오기도 함.
 
 ## Docker vs Virtual Machine
 
-도커와 가상머신은 독립된 환경을 제공한다는 점에서 유사하고, 직접 컨테이너를 사용하면 vm과 큰 차이가 없어 보이지만 컨테이너가 가상머신보다 성능이 훨씬 좋다는 이점이 있음.
+도커와 가상머신은 독립된 환경을 제공한다는 점에서 유사하고, 직접 컨테이너를 사용하면 가상 머신과 큰 차이가 없어 보이지만 컨테이너가 가상머신보다 성능이 훨씬 좋다는 이점이 있음.
 
-이런 차이는 환경을 구축하는 방식에서 비롯되는데, vm의 경우는 호스트 머신 위에 가상화나 반-가상화를 통하여 새로운 os를 구축하고, 그 위에서 작동하는 방식이지만 도커 컨테이너의 경우는 호스트 머신 위에서 리눅스 커널의 namespace, cgroup 기능을 통해 작동하기 때문에 훨씬 가볍고 성능이 좋음. [docker container 참고](#docker-container)
+이런 차이는 환경을 구축하는 방식에서 비롯되는데, 가상 머신의 경우는 호스트 머신 위에 가상화나 반-가상화를 통하여 새로운 os를 구축하고, 그 위에서 작동하는 방식이지만 도커 컨테이너의 경우는 호스트 머신 위에서 리눅스 커널의 `namespace`, `cgroup` 기능을 통해 작동하기 때문에 훨씬 가볍고 성능이 좋음. [docker container 참고](#docker-container)
 
 또한 도커 컨테이너를 생성하기 위해 만드는 이미지 파일도 레이어로 분할되어 생성되기 때문에 변경점이 있다면 그 레이어만 업데이트하고, 나머지는 캐시되어 있는 데이터를 활용할 수 있기 때문에 이미지 생성 시간이 단축됨. [docker image](#docker-image) 참고
 
@@ -165,7 +170,7 @@ Docker 공식 문서는 volume 마운트를 사용하길 강력이 추천하지�
 
 도커 컴포즈는 docker app의 서비스, 네트워크, 볼륨을 정의하는 yaml 파일임. 컨테이너를 실행하기 위해 volume, network, environment 등 다양한 옵션을 통해 `run` 을 하게 되는데, 이런 복잡한 명령어를 파일에 정의하여 자동으로 컨테이너들을 실행시켜줌.
 
-따로 설치해야함. Docker desktop에서는 자동으로 설치됨.
+Linux의 경우 Docker를 설치 하였더라도 따로 설치해야함. Mac이나 Windows 환경에서 사용하는  Docker desktop App에서는 자동으로 설치됨.
 
 또한 필요하다면 이미지를 빌드해주고, 변경사항이 있다면 그 컨테이너만 다시 실행시켜 주며, `.env` 로 환경변수를 설정하고 `depends_on` 을 통해 의존성있는 컨테이너들의 빌드 순서를 정해줄 수 있음!
 
@@ -173,13 +178,13 @@ Docker 공식 문서는 volume 마운트를 사용하길 강력이 추천하지�
 
 # Docker in Inception
 
-일반적으론 docker hub에 official image들로 mariadb, nginx, wordpress php-fpm 등 다양한 컨테이너들을 손쉽게 구동할 수 있지만 alpine이나 debian의 베이스 이미지에서 서비스를 위한 Dockerfile을 직접 작성해야함.
+일반적으론 docker hub에 official image들로 `mariadb`, `nginx`, `wordpress php-fpm` 등 다양한 컨테이너들을 손쉽게 구동할 수 있지만 `alpine`이나 `debian`의 베이스 이미지에서 서비스를 위한 `Dockerfile`을 직접 작성해야함.
 
-alpine 리눅스는 굉장히 경량화된 리눅스로 가벼운게 이점인 컨테이너의 특성 때문에 docker image의 베이스로 상당히 많이 쓰이기 때문에 alpine linux로 base를 잡음.
+`alpine` 리눅스는 굉장히 경량화된 리눅스로 가벼운게 이점인 컨테이너의 특성 때문에 docker image의 베이스로 상당히 많이 쓰이기 때문에 alpine linux로 base를 잡음.
 
 Dockerfile은 다음과 workflow로 작성함
 
-```docker
+```dockerfile
 FROM alpine:3.14
 
 RUN apk update && apk add tini;
@@ -396,7 +401,7 @@ server {
 `ssl_ciphers` : 사용할 암호화 방식 기본값은 `HIGH:!aNULL:!MD5` 이며 `openssl ciphers -v "HIGH:!aNULL:!MD5"` 명령어에 대응되는 암호화 방식이 모두 포함됨. [openssl 참고](https://www.notion.so/openssl/openssl.md),
 `ssl_prefer_server_ciphers` : TLS 암호화 방식 협상 과정에서 서버측 암호화 방식 우선.
 
-더 많은 정보는 [nginx ssl config](http://nginx.org/en/docs/http/ngx_http_ssl_module.html)[openssl ciphers](https://www.openssl.org/docs/manmaster/man1/openssl-ciphers.html) 참고
+더 많은 정보는 [nginx ssl config](http://nginx.org/en/docs/http/ngx_http_ssl_module.html), [openssl ciphers](https://www.openssl.org/docs/manmaster/man1/openssl-ciphers.html) 참고
 
 ## Nginx fastCGI
 
@@ -451,27 +456,27 @@ location /backend {
 - 종료시 및 특정 시점마다 디스크에 저장하는 방식으로 작동
 - 단일 쓰레딩 모델으로 컨텍스트 스위칭이나 락의 비용이 없음.
 - Non-Blocking I/O 모델로 단일 쓰레드임에도 빠름
-- 어느정도 데이터가 쌓였을때, 혹은 종료할때 dump.rdb 란 파일에 내용을 저장하여 종료하여도 데이터가 남아있음.
+- 어느정도 데이터가 쌓였을때, 혹은 종료할때 `dump.rdb` 란 파일에 내용을 저장하여 종료하여도 데이터가 남아있음.
 
 # FTP (File Transport Protocol)
 
-FTP는 파일 전송 프로토콜으로, 서버와 클라이언트 사이에 파일을 전송하기 위해 나온 것임. 1971년에 나왔으며 연결하기 위해선 로그인을 해야함(서버가 허용한 경우 익명 사용자 가능).하지만 이런 정보가 plaintext 형태로 넘어가기 때문에 보안상 상당히 취약하며, 2021년에 대부분 브라우저에서 지원을 중단하고 SFTP(ssh + FTP) 나 FTPS(FTP + TLS)를 사용함.
+`FTP`는 파일 전송 프로토콜으로, 서버와 클라이언트 사이에 파일을 전송하기 위해 나온 것임. 1971년에 나왔으며 연결하기 위해선 로그인을 해야함(서버가 허용한 경우 익명 사용자 가능).하지만 이런 정보가 plaintext 형태로 넘어가기 때문에 보안상 상당히 취약하며, 2021년에 대부분 브라우저에서 지원을 중단하고 `SFTP`(ssh + FTP) 나 `FTPS`(FTP + TLS)를 사용함.
 
-이 FTP는  파일 전송을 위해 두개의 포트를 사용하며 한 포트는 연결을 위해 사용하고(command port)  다른 포트는 데이터 전송을 위해 사용하며(data port) 여기서 passive mode와 active mode로 나뉨.
+이 `FTP`는  파일 전송을 위해 두개의 포트를 사용하며 한 포트는 연결을 위해 사용하고(command port)  다른 포트는 데이터 전송을 위해 사용하며(data port) 여기서 `passive mode`와 `active mode`로 나뉨.
 
-command port를 위해선 통상적으로 21번 포트를 사용하지만 data port는 passive mode와 active mode에서 서로 다름.
+`command port`는 통상적으로 21번 포트를 사용하지만 `data port`는 `passive mode`와 `active mode`에서 서로 다름.
 
 ## active mode
 
 `active mode`에서는 다음과 같이 진행됨
 
-1. 클라이언트에서 임의의 포트(N > 1023)를 FTP 서버의 21번 포트에 연결함. (command port)
-2. 클라이언트에서 data port로 쓸 N+1번 포트의 정보를 서버에게 넘겨줌.
+1. 클라이언트에서 임의의 포트(N > 1023)를 `FTP` 서버의 21번 포트에 연결함. (command port)
+2. 클라이언트에서 `data port`로 쓸 N+1번 포트의 정보를 서버에게 넘겨줌.
 3. 서버는 20번 포트(데이터 포트)에서 클라이언트의 N+1 포트로 연결함. (data port)
 
 ![inception_image.007.jpeg](./asset/inception_image.007.jpeg)
 
-이때 client측에서 문제가 발생함. client는 서버와 data port로 실제로 연결된게 아니며 단순히 서버에게 data port를 위하여 어떤 포트를 Listening 할건지 알려주는 거임. 서버측에서 data port로 연결하려고 하면 클라이언트측 방화벽에선 그저 외부 시스템에서 연결을 하려는 것으로 보이기 때문에 방화벽에 막힘.
+이때 client측에서 문제가 발생함. client는 서버와 `data port`로 실제로 연결된게 아니며 단순히 서버에게 `data port`를 위하여 어떤 포트를 Listening 할건지 알려주는 거임. 서버측에서 `data port`로 연결하려고 하면 클라이언트측 방화벽에선 그저 외부 시스템에서 연결을 하려는 것으로 보이기 때문에 방화벽에 막힘.
 
 ## passive mode
 
@@ -479,16 +484,16 @@ command port를 위해선 통상적으로 21번 포트를 사용하지만 data p
 
 `passive mode` FTP에서 클라이언트는 두 연결을 모두 시작하여 방화벽 문제를 해결함.
 
-1. FTP연결을 열 때 클라이언트는 두개의 랜덤 포트를 로컬에서 열음.(N>1023, N+1)
+1. `FTP`연결을 열 때 클라이언트는 두개의 랜덤 포트를 로컬에서 열음.(N>1023, N+1)
 2. 첫번째 포트는 서버의 21번 포트에 연결됨.(command port)
 3. 클라이언트가 `PASV` 명령을 보내서 서버에서 랜덤 포트 P (p > 1023)을 열고 클라이언트에게 P를 알려줌.
 4. 클라이언트는 N+1에서 P로 연결함. (data port)
 
 ![inception_image.008.jpeg](./asset/inception_image.008.jpeg)
 
-여기서 서버가 특정 포트들을(data port) 열어둬야 한다는 문제가 발생함. 하지만 서버측에서 특정 포트 범위를 data port로 쓰도록 설정하여 문제를 해결할 수 있음.
+여기서 서버가 특정 포트들을(`data port`) 열어둬야 한다는 문제가 발생함. 하지만 서버측에서 특정 포트 범위를 `data port`로 쓰도록 설정하여 문제를 해결할 수 있음.
 
-또한 passive mode를 지원하지 않는 클라이언트가 있을 수 있으나 요즘엔 그런거 없음.
+또한 `passive mode`를 지원하지 않는 클라이언트가 있을 수 있으나 요즘엔 그런거 없음.
 
 [active FTP vs passive FTP](http://slacksite.com/other/ftp.html)
 
