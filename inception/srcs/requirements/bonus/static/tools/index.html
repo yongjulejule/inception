@@ -448,7 +448,7 @@
     <p>Dockerfile은 다음과 workflow로 작성함</p>
     <pre><code class="language-dockerfile"><div><span class="hljs-keyword">FROM</span> alpine:<span class="hljs-number">3.14</span>
 
-<span class="hljs-keyword">RUN</span><span class="bash"> apk update &amp;&amp; apk add tini;</span>
+<span class="hljs-keyword">RUN</span><span class="bash"> apk update &amp;&amp; apk add --no-cache tini;</span>
 
 <span class="hljs-keyword">RUN</span><span class="bash"> [필요한 패키지 다운로드]</span>
 

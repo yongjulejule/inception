@@ -137,7 +137,8 @@ ENTRYPOINT [ "/bin/sh" ]
 > 컨테이너 프로세스와 init 프로세스의 namespace 비교
 > 
 
-TODO: 컨테이너 프로세스의 pid 여러개 찍히는거 보여주는 이미지 넣기
+![container-proc-status](./asset/container-proc-status.png)
+> Host에서 실행된 컨테이너 프로세스의 /proc/<pid>/status 파일. NSpid 같은 필드에 두개씩 찍혀있는것 확인 가능.
 
 ### pid 1
 
@@ -187,7 +188,7 @@ Dockerfile은 다음과 workflow로 작성함
 ```dockerfile
 FROM alpine:3.14
 
-RUN apk update && apk add tini;
+RUN apk update && apk add --no-cache tini;
 
 RUN [필요한 패키지 다운로드]
 

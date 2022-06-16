@@ -7,6 +7,8 @@ if [ ! -d /var/www/html/wordpress/ ]; then
 	mkdir -p /var/www/html/
 	wp core download --allow-root
 	cp /tmp/wp-config.php /var/www/html/wordpress/wp-config.php
+else
+	echo "wordpress is already downloaded"
 fi
 
 set +e
@@ -58,6 +60,8 @@ if ! wp plugin is-installed redis-cache --allow-root; then
 	wp plugin activate --allow-root \
 	redis-cache
 	wp redis enable --force --allow-root
+else
+	echo "redis-cache is already installed."
 fi
 
 chown -R www-data:www-data /var/www/html

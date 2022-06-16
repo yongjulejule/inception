@@ -1,17 +1,15 @@
 FROM alpine:3.14
 
-# install tini for PID 1
-RUN set -eux; \
-	apk update; \
+RUN set -ex && \
+	apk update && \
 	apk add --no-cache tini
 
-# install mariadb
 RUN set -ex; \
-	apk update; \
-	# install mariadb
-	apk add --no-cache mariadb mariadb-client; \
-	# make directory if not exist
-	mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld /usr/lib/mariadb && chmod 777 /usr/lib/mariadb;
+	apk update && \
+	apk add --no-cache mariadb mariadb-client && \
+	mkdir -p /run/mysqld && \
+	chown -R mysql:mysql /run/mysqld /usr/lib/mariadb && \
+	chmod 777 /usr/lib/mariadb;
 
 COPY tools/entrypoint.sh /tmp/entrypoint.sh
 
@@ -23,7 +21,6 @@ EXPOSE 3306
 
 STOPSIGNAL SIGQUIT
 
-# init by tini for PID 1
 ENTRYPOINT ["/sbin/tini", "--", "/tmp/entrypoint.sh"]
 
 CMD ["/usr/bin/mysqld"]

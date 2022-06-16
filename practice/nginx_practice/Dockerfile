@@ -1,7 +1,7 @@
 FROM alpine:3.14
 
 RUN set -ex \
-	apk update && apk add tini
+	apk update && apk add --no-cache tini
 
 # install prerequsitions
 RUN set -ex \

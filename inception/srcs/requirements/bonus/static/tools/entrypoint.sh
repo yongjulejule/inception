@@ -2,10 +2,11 @@
 
 set -e
 
-if [ ! -f /var/www/html/index.html ]; then
+if [ ! -f /var/www/html/inception/index.html ]; then
 	mkdir -p /var/www/html/inception
 	cp /tmp/index.html /var/www/html/inception/index.html
-	cp /tmp/conf.template /etc/nginx/conf.d/default.conf
+	cp -r /tmp/asset /var/www/html/inception/asset
+	cp /tmp/nginx.conf.template /etc/nginx/conf.d/default.conf
 	sed -i s/"user  nginx"/"user  www-data"/ /etc/nginx/nginx.conf
 	chown -R www-data:www-data /var/log/nginx
 fi

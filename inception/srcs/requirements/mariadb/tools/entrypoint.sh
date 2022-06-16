@@ -11,10 +11,10 @@ if [ ! -d /var/lib/mysql/$MYSQL_DATABASE ]; then
 
 	echo "Creating initial MaraiDB databases"
 
-	MYSQL_DATABASE=${MYSQL_DATABASE:-"42defaultdb"}
-	MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-"rmfnxm"}
-	MYSQL_USER=${MYSQL_USER:-"42user"}
-	MYSQL_PASSWORD=${MYSQL_PASSWORD:-"4242"}
+	MYSQL_DATABASE=${MYSQL_DATABASE}
+	MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+	MYSQL_USER=${MYSQL_USER}
+	MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
 	# Make temporary file to save query
 	tmpfile=`mktemp`

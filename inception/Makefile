@@ -111,7 +111,6 @@ endif
 .PHONY	: clean
 clean 	:
 				make down c="-v"
-				docker image rm $(IMGS)
 				yes | docker system prune -a
 
 ######################### Color #########################

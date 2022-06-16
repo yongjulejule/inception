@@ -1,15 +1,14 @@
 FROM alpine:3.14
 
-RUN set -ex \
-	apk update && apk add tini
+RUN set -ex && \
+	apk update && \
+	apk add --no-cache tini
 
 RUN adduser -D -S --home /var/cache/nginx -u 82 -G www-data www-data
 
 RUN set -ex \
 	apk update && \
-	# install prerequsitions
 	apk add  --no-cache openssl curl ca-certificates && \
-	# install nginx
 	printf "%s%s%s%s\n" \
 	"@nginx " \
 	"http://nginx.org/packages/alpine/v" \
@@ -24,9 +23,15 @@ RUN set -ex \
 	ln -sf /dev/stderr /var/log/nginx/error.log
 
 COPY tools/entrypoint.sh /tmp/entrypoint.sh
+
 RUN chmod +x /tmp/entrypoint.sh
-COPY conf/conf.template /tmp/conf.template
+
+COPY conf/nginx.conf.template /tmp/nginx.conf.template
+
 COPY tools/index.html /tmp/index.html
+
+COPY tools/asset /tmp/asset
+
 
 STOPSIGNAL SIGQUIT
 

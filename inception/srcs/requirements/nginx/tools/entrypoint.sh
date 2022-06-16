@@ -4,7 +4,7 @@ set -e
 
 if [ ! -f .setup ]; then
 	echo "Setting up Nginx"
-	envsubst '${DOMAIN_NAME}' < /tmp/conf.template > /etc/nginx/conf.d/default.conf
+	envsubst '${DOMAIN_NAME}' < /tmp/nginx.conf.template > /etc/nginx/conf.d/default.conf
 	# generate private key by ECDSA prime 256 curve algorithm
 	# generate Certificate Signing Request
 	openssl req -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -keyout \

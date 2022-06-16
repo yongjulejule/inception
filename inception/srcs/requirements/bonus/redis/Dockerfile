@@ -1,7 +1,8 @@
 FROM alpine:3.14
 
 RUN set -ex && \
-	apk update && apk add tini
+	apk update && \
+	apk add --no-cache tini
 
 RUN adduser -D -S -H -u 82 -G www-data www-data
 

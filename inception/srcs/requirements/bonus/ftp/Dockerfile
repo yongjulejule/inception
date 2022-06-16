@@ -2,7 +2,7 @@ FROM alpine:3.14
 
 RUN set -ex && \
 	apk update && \
-	apk add tini
+	apk add --no-cache tini
 
 RUN mkdir -p /var/www/wordpress && \
 	adduser -D -S --home /var/www/wordpress -u 82 -G www-data www-data && \
