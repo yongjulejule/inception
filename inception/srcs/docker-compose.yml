@@ -5,7 +5,6 @@ services:
     image: cadvisor:v1
 
     depends_on:
-      - nginx
       - mariadb
       - static
       - adminer
@@ -34,8 +33,6 @@ services:
   static:
     image: static:v1
 
-    depends_on:
-      - nginx
     container_name: "static"
 
     build:
@@ -163,6 +160,8 @@ services:
     depends_on:
       - wordpress
       - adminer
+      - static
+      - cadvisor
 
     build:
       context: ./requirements/nginx/
