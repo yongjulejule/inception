@@ -148,6 +148,7 @@ ENTRYPOINT [ "/bin/sh" ]
 - 일반적으론 환경에선 PID 1에 적절한 `init` 프로세스가 할당되지만, 도커에선 `<executable>`이 바로 PID 1로 실행됨.
 - 또한 도커를 중단시키는 `docker stop` 명령어는 `SIGTERM` 을 보내서 컨테이너를 중단시키는데, 만약 10초간 컨테이너가 중단되지 않으면 `SIGKILL` 명령어로 프로세스를 예상치 못하게 종료시키며, 문제가 발생할 수 있음!
 - Docker에서 [tini](https://github.com/krallin/tini)라는 적절한 initialization process(`SIGTERM` 시그널 핸들링이 잘 되어 있는 프로그램, `SIGTERM`을 받으면 자식 프로세스들에게 보내고, 최종적으로 자기 자신도 종료되는 방식으로 작동)를 `-init`플레그를 통하여 지원하기 때문에 이를 사용하거나, [dump-init](https://github.com/Yelp/dumb-init), [baseimage-docker](https://github.com/phusion/baseimage-docker)같은 프로그램을 사용하여 시작하는것을 추천. (모두 리눅스의 PID 1 역할을 해주는 경량화된 프로그램)
+	- docker compose 에서는 init: true 라는 옵션을 통해 간편하게 init 시스템을 구축할 수 있음.
 
 ### 볼륨
 
@@ -204,6 +205,8 @@ VOLUME [마운트 포인트]
 ```
 
 필요한 패키지를 다운로드 받는 과정은 주로 `Dockerfile`의 `RUN` 커맨드를 활용하여 image cache를 활용하기 쉽게 구성하였고, 해당 컨테이너에서 서비스를 가동하기 위한 작업은 `entrypoint.sh` 에서 쉘 스크립트를 이용하여 작성함.
+
+`init: true` 옵션을 사용하면 tini 를 설치하지 않아도 되지만, 직접 설치하고 -vvv 와 같은 옵션을 주면 시그널 핸들링 과정을 모니터링 할 수 있다는 이점이 있어서 설치함.
 
 # MariaDB
 
@@ -399,7 +402,7 @@ server {
 `ssl_certificate_key` : 인증서 파일의 키 파일의 위치
 `ssl_session_timeout` : TLS 세션 유효시간
 `ssl_protocols` : 사용할 프로토콜
-`ssl_ciphers` : 사용할 암호화 방식 기본값은 `HIGH:!aNULL:!MD5` 이며 `openssl ciphers -v "HIGH:!aNULL:!MD5"` 명령어에 대응되는 암호화 방식이 모두 포함됨. [openssl 참고](https://www.notion.so/openssl/openssl.md),
+`ssl_ciphers` : 사용할 암호화 방식 기본값은 `HIGH:!aNULL:!MD5` 이며 `openssl ciphers -v "HIGH:!aNULL:!MD5"` 명령어에 대응되는 암호화 방식이 모두 포함됨. [openssl 참고](https://github.com/yongjulejule/TIL/blob/main/openssl/openssl.md),
 `ssl_prefer_server_ciphers` : TLS 암호화 방식 협상 과정에서 서버측 암호화 방식 우선.
 
 더 많은 정보는 [nginx ssl config](http://nginx.org/en/docs/http/ngx_http_ssl_module.html), [openssl ciphers](https://www.openssl.org/docs/manmaster/man1/openssl-ciphers.html) 참고
